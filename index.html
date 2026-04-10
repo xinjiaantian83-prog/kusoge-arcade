@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>クソゲーセンター</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Zen+Kaku+Gothic+New:wght@700&display=swap');
+
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
+:root {
+  /* 背景 */
+  --bg:           #07070f;
+  --bg-grad:      #0f0f20;
+
+  /* 筐体ボディ（クリーム系オフホワイト — 共通ベース） */
+  --cream:        #e8dbc7;   /* メイン外装色 */
+  --cream-hi:     #f2ead8;   /* ハイライト面（上・左） */
+  --cream-sh:     #c8b99a;   /* シャドウ面（下・右） */
+  --cream-deep:   #b5a487;   /* 深い影・溝 */
+
+  /* 操作パネル面（やや暗いクリーム） */
+  --panel-cream:  #d4c4a8;
+  --panel-sh:     #bfaf94;
+
+  /* ベゼル/スクリーン周り */
+  --bezel:        #1a1a1a;
+  --bezel-hi:     #2e2e2e;
+  --bezel-sh:     #0a0a0a;
+  --screen-bg:    #000508;
+
+  /* ネオン */
+  --neon-yellow:  #ffe600;
+  --neon-cyan:    #00f5ff;
+  --neon-pink:    #ff2d78;
+  --neon-green:   #39ff14;
+
+  /* アクセント（テーマ色 — 各筐体でオーバーライド） */
+  --accent:       #ff2d78;
+  --accent-dark:  #8b0033;
+  --accent-glow:  rgba(255,45,120,0.5);
+
+  /* テキスト */
+  --text-light:   #dde0ff;
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  background-image:
+    radial-gradient(ellipse 100% 40% at 50% 0%, var(--bg-grad), transparent 70%),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.008) 0px, rgba(255,255,255,0.008) 1px, transparent 1px, transparent 40px);
+  color: var(--text-light);
+  font-family: 'Press Start 2P', monospace;
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* スキャンライン */
+body::after {
+  content:''; position:fixed; inset:0;
+  background: repeating-linear-gradient(
+    0deg, transparent 0, transparent 3px,
+    rgba(0,0,0,0.1) 3px, rgba(0,0,0,0.1) 4px
+  );
+  pointer-events:none; z-index:9999;
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+header { text-align:center; padding:0 0 14px; }
+
+.marquee-strip {
+  background: var(--neon-pink);
+  overflow:hidden; padding:5px 0; margin-bottom:18px;
+}
+.marquee-text {
+  display:inline-block; white-space:nowrap;
+  font-size:8px; color:#000; letter-spacing:2px;
+  animation: marquee 16s linear infinite;
+}
+@keyframes marquee { from{transform:translateX(100vw)} to{transform:translateX(-100%)} }
+
+.site-title {
+  font-size:clamp(16px,5.5vw,24px);
+  color:var(--neon-yellow);
+  text-shadow:0 0 10px var(--neon-yellow), 0 0 28px rgba(255,230,0,0.35);
+  letter-spacing:3px;
+  animation:flicker 6s infinite;
+}
+@keyframes flicker {
+  0%,91%,100%{opacity:1} 92%{opacity:.55} 94%{opacity:1} 97%{opacity:.3} 99%{opacity:1}
+}
+
+.site-sub {
+  font-size:7px; color:var(--neon-cyan);
+  text-shadow:0 0 6px var(--neon-cyan);
+  margin-top:8px; letter-spacing:1px;
+}
+
+.insert-coin {
+  display:inline-block; margin-top:12px;
+  font-size:7px; color:var(--neon-green);
+  border:1px solid var(--neon-green); padding:4px 14px;
+  text-shadow:0 0 6px var(--neon-green);
+  animation:blink 1.4s step-end infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* ============================================================
+   ARCADE FLOOR
+   ============================================================ */
+.arcade-floor {
+  padding:8px 18px 70px;
+  display:flex; flex-direction:column; gap:52px;
+  max-width:400px; margin:0 auto;
+}
+
+/* ============================================================
+   CABINET — 全体構造
+
+  .cabinet
+    .cab-topper        ← ネオンサインボード（看板）
+    .cab-shell         ← 筐体全体のシェル（クリーム色の箱）
+      .cab-top-trim    ← 上部トリム帯
+      .cab-screen-zone ← 画面ゾーン（凹み）
+        .screen-bezel  ← 黒ベゼル（額縁）
+          .screen      ← CRT画面
+      .cab-seam        ← パネルとの境目の継ぎ目
+      .cab-panel       ← 操作パネル面（傾斜感）
+        .panel-top     ← コイン口エリア
+        .panel-controls← ボタン・レバーエリア
+    .cab-feet          ← 脚台
+   ============================================================ */
+
+.cabinet {
+  position:relative;
+  cursor:pointer;
+  user-select:none;
+  /* 筐体全体の落ち影 — 黒背景に浮かせる */
+  filter: drop-shadow(0 12px 32px rgba(0,0,0,0.85))
+          drop-shadow(0 4px 8px rgba(0,0,0,0.6));
+}
+.cabinet:active { filter:
+  drop-shadow(0 6px 16px rgba(0,0,0,0.9))
+  drop-shadow(0 2px 4px rgba(0,0,0,0.7));
+}
+.cab-shell { transition:transform 0.07s ease; }
+.cab-topper { transition:transform 0.07s ease; }
+.cabinet:active .cab-shell,
+.cabinet:active .cab-topper { transform:translateY(3px); }
+
+/* ----------------------------------------------------------
+   看板 (cab-topper)
+   アクセントカラーのネオン看板として完全独立
+   ---------------------------------------------------------- */
+.cab-topper {
+  background: #111118;
+  border:4px solid #222230;
+  border-bottom:none;
+  border-radius:8px 8px 0 0;
+  padding:12px 14px 14px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+
+  /* 看板の深み */
+  box-shadow:
+    inset 0 0 20px rgba(0,0,0,0.6),
+    inset 0 2px 0 rgba(255,255,255,0.06);
+}
+
+/* ネオン上ラインLED */
+.cab-topper::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:3px;
+  background:var(--accent);
+  box-shadow:
+    0 0 6px var(--accent),
+    0 0 18px var(--accent),
+    0 0 40px var(--accent-glow);
+}
+
+/* 看板内のグロウ効果 */
+.cab-topper::after {
+  content:'';
+  position:absolute; inset:0;
+  background:radial-gradient(ellipse at 50% 0%, var(--accent-glow) 0%, transparent 65%);
+  pointer-events:none;
+}
+
+.cab-num {
+  font-size:6px;
+  color:var(--accent);
+  opacity:0.6;
+  letter-spacing:3px;
+  margin-bottom:6px;
+  position:relative; z-index:1;
+}
+
+.cab-title {
+  font-size:clamp(10px,3.3vw,14px);
+  color:var(--accent);
+  text-shadow:
+    0 0 8px var(--accent),
+    0 0 20px var(--accent),
+    0 0 40px var(--accent-glow);
+  line-height:1.75;
+  letter-spacing:1px;
+  position:relative; z-index:1;
+  animation:titlePulse 3s ease-in-out infinite;
+}
+@keyframes titlePulse {
+  0%,100%{ text-shadow:0 0 8px var(--accent),0 0 20px var(--accent),0 0 40px var(--accent-glow); }
+  50%    { text-shadow:0 0 12px var(--accent),0 0 30px var(--accent),0 0 60px var(--accent-glow); }
+}
+
+/* ----------------------------------------------------------
+   筐体シェル本体 (cab-shell) — クリーム色の厚い箱
+   ---------------------------------------------------------- */
+.cab-shell {
+  background: var(--cream);
+  border:4px solid var(--cream-deep);
+  border-top:none;
+  border-radius:0 0 6px 6px;
+  position:relative;
+
+  /* 立体感：左上ハイライト + 右下シャドウ */
+  box-shadow:
+    /* 内側の面感 */
+    inset 5px 0 0 var(--cream-hi),
+    inset -5px 0 0 var(--cream-sh),
+    inset 0 -5px 0 var(--cream-sh),
+    /* 外の落ち影（drop-shadowと二重で深み） */
+    6px 0 0 var(--cream-deep),
+    -4px 0 0 var(--cream-deep);
+}
+
+/* ----------------------------------------------------------
+   上部トリム帯（看板直下の装飾ライン）
+   ---------------------------------------------------------- */
+.cab-top-trim {
+  height:20px;
+  background:linear-gradient(to bottom, var(--cream-hi) 0%, var(--cream) 60%, var(--cream-sh) 100%);
+  border-bottom:3px solid var(--cream-deep);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 16px;
+}
+
+/* トリム帯のリベット */
+.trim-rivet {
+  width:7px; height:7px;
+  border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, var(--cream-hi), var(--cream-sh));
+  border:1px solid var(--cream-deep);
+  box-shadow:inset 0 1px 2px rgba(0,0,0,0.25), 0 1px 0 rgba(255,255,255,0.4);
+}
+
+/* アクセントストライプ（中央の細ライン） */
+.trim-stripe {
+  flex:1; height:3px; margin:0 10px;
+  background:linear-gradient(to right, transparent, var(--accent), transparent);
+  box-shadow:0 0 6px var(--accent);
+  border-radius:2px;
+}
+
+/* ----------------------------------------------------------
+   画面ゾーン（凹み表現）
+   ---------------------------------------------------------- */
+.cab-screen-zone {
+  /* クリームボディより暗く → 凹んで見える */
+  background: var(--cream-sh);
+  margin:0 14px;
+  padding:14px 14px 12px;
+  border-radius:4px;
+  position:relative;
+
+  box-shadow:
+    /* 凹み：内側上左が暗い */
+    inset 3px 3px 8px rgba(0,0,0,0.35),
+    inset -2px -2px 6px rgba(0,0,0,0.2),
+    /* 凹み外縁のハイライト */
+    0 -1px 0 var(--cream-hi),
+    0 1px 0 var(--cream-deep);
+}
+
+/* ベゼル（黒い額縁） */
+.screen-bezel {
+  background: var(--bezel);
+  border-radius:6px;
+  padding:10px;
+  position:relative;
+
+  /* 厚い額縁の立体感 */
+  box-shadow:
+    /* 外周のハイライト・シャドウ */
+    inset 2px 2px 0 var(--bezel-hi),
+    inset -2px -2px 0 var(--bezel-sh),
+    /* ベゼル自体の落ち影 */
+    0 2px 8px rgba(0,0,0,0.8),
+    /* 画面の光が漏れるグロウ */
+    0 0 0 1px rgba(0,0,0,0.9),
+    0 0 16px rgba(0,0,0,0.5);
+}
+
+/* ベゼル角のネジ */
+.screw {
+  position:absolute;
+  width:8px; height:8px;
+  border-radius:50%;
+  background:radial-gradient(circle at 40% 35%, #555, #1a1a1a);
+  border:1px solid #0a0a0a;
+  box-shadow:inset 0 1px 1px rgba(255,255,255,0.12);
+}
+.screw::after {
+  content:'';
+  position:absolute;
+  top:50%; left:50%; transform:translate(-50%,-50%);
+  width:4px; height:1px;
+  background:rgba(0,0,0,0.5);
+  border-radius:1px;
+}
+.screw-tl { top:4px; left:4px; }
+.screw-tr { top:4px; right:4px; }
+.screw-bl { bottom:4px; left:4px; }
+.screw-br { bottom:4px; right:4px; }
+
+/* CRT画面 */
+.screen {
+  background:var(--screen-bg);
+  aspect-ratio:4/3;
+  border-radius:3px;
+  overflow:hidden;
+  position:relative;
+  box-shadow:
+    inset 0 0 30px rgba(0,0,0,0.9),
+    inset 0 0 0 1px rgba(255,255,255,0.025);
+}
+
+/* CRTグロウ（周囲暗く・中央明るい） */
+.screen::before {
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(ellipse at 45% 40%,
+    rgba(255,255,255,0.03) 0%,
+    transparent 60%
+  );
+  z-index:1; pointer-events:none;
+}
+.screen::after {
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(ellipse at center,
+    transparent 50%,
+    rgba(0,0,0,0.65) 100%
+  );
+  z-index:4; pointer-events:none;
+}
+
+/* 画面コンテンツ */
+.screen-content {
+  position:relative; width:100%; height:100%;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:8px; padding:12px;
+  z-index:2;
+}
+
+.game-art {
+  font-size:clamp(38px,12vw,56px); line-height:1;
+  filter:drop-shadow(0 0 10px rgba(255,255,255,0.2));
+  animation:floatY 3s ease-in-out infinite;
+}
+@keyframes floatY { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+
+.game-desc {
+  font-family:'Zen Kaku Gothic New',sans-serif;
+  font-weight:700;
+  font-size:clamp(10px,3.2vw,13px);
+  text-align:center; line-height:1.55; color:#bbc0e0;
+}
+
+.screen-ticker {
+  position:absolute; bottom:5px; left:0; right:0;
+  font-size:6px; color:rgba(255,255,255,0.35);
+  white-space:nowrap; overflow:hidden; z-index:3;
+}
+.screen-ticker span {
+  display:inline-block;
+  animation:tickerMove 12s linear infinite;
+}
+@keyframes tickerMove { from{transform:translateX(110%)} to{transform:translateX(-110%)} }
+
+/* ----------------------------------------------------------
+   継ぎ目（画面↔操作パネルの分割ライン）
+   ---------------------------------------------------------- */
+.cab-seam {
+  height:16px;
+  margin:0 14px;
+  background:linear-gradient(to bottom,
+    var(--cream-sh) 0%,
+    var(--cream-deep) 30%,
+    var(--cream-sh) 60%,
+    var(--cream) 100%
+  );
+  border-top:2px solid var(--cream-deep);
+  border-bottom:2px solid var(--cream-hi);
+  position:relative;
+}
+
+/* 継ぎ目中央のアクセントバー */
+.cab-seam::after {
+  content:'';
+  position:absolute;
+  top:50%; left:20px; right:20px; height:2px;
+  transform:translateY(-50%);
+  background:linear-gradient(to right, transparent, var(--accent), transparent);
+  box-shadow:0 0 6px var(--accent);
+  opacity:.6;
+}
+
+/* ----------------------------------------------------------
+   操作パネル (cab-panel)
+   ここが「物理感」の核心
+   ---------------------------------------------------------- */
+.cab-panel {
+  margin:0 14px 14px;
+  background:var(--panel-cream);
+  border-radius:2px 2px 4px 4px;
+  overflow:hidden;
+  position:relative;
+
+  /* パネル面の立体感：上から光が当たっている */
+  box-shadow:
+    inset 0 2px 0 var(--cream-hi),
+    inset 2px 0 0 rgba(255,255,255,0.3),
+    inset -2px 0 0 var(--panel-sh),
+    inset 0 -2px 0 var(--panel-sh),
+    0 2px 4px rgba(0,0,0,0.4);
+}
+
+/* パネル上部：コイン投入口エリア */
+.panel-top {
+  background:var(--panel-sh);
+  padding:10px 18px 8px;
+  border-bottom:2px solid var(--cream-deep);
+  display:flex; align-items:center; justify-content:space-between;
+  gap:8px;
+
+  box-shadow:inset 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* コイン投入口ユニット */
+.coin-unit {
+  display:flex; flex-direction:column; align-items:center; gap:5px;
+}
+
+.coin-slot-housing {
+  background: #1a1612;
+  border:2px solid #0a0908;
+  border-radius:3px;
+  padding:5px 8px;
+  box-shadow:
+    inset 0 2px 4px rgba(0,0,0,0.8),
+    0 1px 0 rgba(255,255,255,0.15);
+}
+.coin-slot {
+  width:30px; height:5px;
+  background:#0a0908;
+  border-radius:3px;
+  border:1px solid rgba(255,255,255,0.08);
+  box-shadow:inset 0 2px 3px rgba(0,0,0,1);
+}
+.coin-slot + .coin-slot { margin-top:4px; }
+
+.coin-label {
+  font-size:5px;
+  color:rgba(0,0,0,0.45);
+  letter-spacing:1px;
+}
+
+/* 画面脇の小さなLEDインジケーター */
+.led-group {
+  display:flex; flex-direction:column; gap:5px; align-items:center;
+}
+.led {
+  width:7px; height:7px;
+  border-radius:50%;
+  border:1px solid rgba(0,0,0,0.3);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.2);
+}
+.led.on {
+  animation:ledBlink 1.8s step-end infinite;
+}
+@keyframes ledBlink { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+/* パネル下部：メインコントロール */
+.panel-controls {
+  padding:14px 18px 16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+}
+
+/* ジョイスティック */
+.joystick-wrap {
+  width:44px; height:50px;
+  position:relative; flex-shrink:0;
+}
+.joystick-gate {
+  /* ゲート（根本の台座） */
+  position:absolute; bottom:0; left:50%; transform:translateX(-50%);
+  width:44px; height:20px;
+  background:radial-gradient(ellipse at 50% 20%, #3a3530, #1a1512);
+  border-radius:50%;
+  border:2px solid #0a0908;
+  box-shadow:
+    0 3px 6px rgba(0,0,0,0.6),
+    inset 0 2px 4px rgba(255,255,255,0.05);
+}
+.joystick-stick {
+  position:absolute; bottom:12px; left:50%; transform:translateX(-50%);
+  width:10px; height:28px;
+  background:linear-gradient(to right, #3a3530, #2a2520, #3a3530);
+  border-radius:5px;
+  border:1px solid #0a0908;
+  box-shadow:2px 0 4px rgba(0,0,0,0.4);
+}
+.joystick-ball {
+  position:absolute; bottom:32px; left:50%; transform:translateX(-50%);
+  width:20px; height:20px;
+  border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #555, #1a1512);
+  border:2px solid #0a0908;
+  box-shadow:
+    0 3px 6px rgba(0,0,0,0.5),
+    inset 0 2px 3px rgba(255,255,255,0.1);
+}
+
+/* STARTボタン（メインの大ボタン） */
+.btn-start-wrap {
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+}
+
+.btn-start {
+  width:100%;
+  font-family:'Press Start 2P', monospace;
+  font-size:clamp(8px,2.6vw,11px);
+  letter-spacing:1px;
+  padding:16px 8px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  color:#fff;
+
+  /* ボタン本体のグラデ */
+  background:linear-gradient(to bottom,
+    color-mix(in srgb, var(--accent) 80%, white 20%) 0%,
+    var(--accent) 40%,
+    var(--accent-dark) 100%
+  );
+
+  /* 物理ボタン感：厚み・押せる感 */
+  box-shadow:
+    0 6px 0 var(--accent-dark),         /* 底面（厚み） */
+    0 7px 0 rgba(0,0,0,0.5),            /* 底面の影 */
+    inset 0 2px 0 rgba(255,255,255,0.25),/* 上面ハイライト */
+    inset 0 -1px 0 rgba(0,0,0,0.2),    /* 下面シャドウ */
+    0 0 20px var(--accent-glow);        /* ネオングロウ */
+
+  position:relative; top:0;
+  transition:top 0.06s ease, box-shadow 0.06s ease;
+  text-shadow:0 1px 3px rgba(0,0,0,0.4);
+}
+.btn-start:active {
+  top:4px;
+  box-shadow:
+    0 2px 0 var(--accent-dark),
+    0 3px 0 rgba(0,0,0,0.4),
+    inset 0 2px 0 rgba(0,0,0,0.15),
+    0 0 10px var(--accent-glow);
+}
+
+.btn-label {
+  font-size:5px;
+  color:rgba(0,0,0,0.4);
+  letter-spacing:2px;
+}
+
+/* サブボタン群（右側） */
+.sub-buttons {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
+  flex-shrink:0;
+}
+
+.sub-btn-row {
+  display:flex; gap:10px;
+}
+
+.sub-btn {
+  width:22px; height:22px;
+  border-radius:50%;
+  border:2px solid rgba(0,0,0,0.35);
+  cursor:default;
+  position:relative;
+
+  box-shadow:
+    0 4px 0 rgba(0,0,0,0.4),
+    inset 0 2px 0 rgba(255,255,255,0.25),
+    inset 0 -1px 0 rgba(0,0,0,0.2);
+}
+
+.sub-btn-label {
+  font-size:4px;
+  color:rgba(0,0,0,0.35);
+  letter-spacing:1px;
+  text-align:center;
+}
+
+/* スピーカーグリル */
+.speaker-grill {
+  display:grid;
+  grid-template-columns:repeat(5,5px);
+  gap:4px;
+  padding:8px 12px;
+  background:var(--panel-sh);
+  border-top:2px solid var(--cream-deep);
+  justify-content:center;
+}
+.sp-hole {
+  width:5px; height:5px;
+  border-radius:50%;
+  background:#1a1612;
+  border:1px solid rgba(0,0,0,0.5);
+  box-shadow:inset 0 1px 2px rgba(0,0,0,0.8);
+}
+
+/* ----------------------------------------------------------
+   脚台
+   ---------------------------------------------------------- */
+.cab-feet {
+  display:flex;
+  justify-content:space-between;
+  padding:0 24px;
+}
+.cab-foot {
+  width:20px; height:18px;
+  background:linear-gradient(to bottom, var(--cream-deep), #8a7a62);
+  border-radius:0 0 4px 4px;
+  border:2px solid #6a5a42;
+  border-top:none;
+  box-shadow:2px 4px 8px rgba(0,0,0,0.6);
+}
+
+/* ============================================================
+   カラーテーマ（各筐体でCSS変数だけ差し替え）
+   ============================================================ */
+
+/* ピンク / マゼンタ */
+.cab-pink {
+  --accent:       #ff2d78;
+  --accent-dark:  #8b0033;
+  --accent-glow:  rgba(255,45,120,0.5);
+}
+.cab-pink .screen-content { --screen-tint:#120008; }
+.cab-pink .screen { background:radial-gradient(ellipse at 30% 25%, #120008, #000508); }
+.cab-pink .btn-start { color:#fff; }
+
+/* シアン / ブルー */
+.cab-cyan {
+  --accent:       #00f5ff;
+  --accent-dark:  #006677;
+  --accent-glow:  rgba(0,245,255,0.4);
+}
+.cab-cyan .screen { background:radial-gradient(ellipse at 30% 25%, #001420, #000508); }
+.cab-cyan .btn-start { color:#000; text-shadow:none; }
+
+/* ライム / グリーン */
+.cab-green {
+  --accent:       #39ff14;
+  --accent-dark:  #1a6600;
+  --accent-glow:  rgba(57,255,20,0.4);
+}
+.cab-green .screen { background:radial-gradient(ellipse at 30% 25%, #001400, #000508); }
+.cab-green .btn-start { color:#000; text-shadow:none; }
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+footer {
+  text-align:center; padding:28px 16px;
+  font-size:6px; color:rgba(255,255,255,0.13); letter-spacing:2px;
+}
+
+/* ============================================================
+   タップフラッシュ演出
+   ============================================================ */
+.cabinet.flash .cab-shell,
+.cabinet.flash .cab-topper {
+  filter:brightness(1.5) saturate(1.3);
+  transition:filter 0.12s;
+}
+</style>
+</head>
+<body>
+
+<!-- ========== HEADER ========== -->
+<header>
+  <div class="marquee-strip">
+    <span class="marquee-text">
+      ★ KUSO-GAME CENTER ★ クソゲーセンター ★ INSERT COIN ★ PRESS START ★ クソゲーセンター ★ ALL SKILL REFUSED ★
+    </span>
+  </div>
+  <div class="site-title">クソゲーセンター</div>
+  <div class="site-sub">THE WORLD'S WORST GAME ARCADE</div>
+  <div class="insert-coin">★ INSERT COIN ★</div>
+</header>
+
+<!-- ========== ARCADE FLOOR ========== -->
+<main class="arcade-floor">
+
+  <!-- ====================================================
+       筐体 NO.001 — コーラ落とし穴ゲーム (ピンク)
+       ==================================================== -->
+  <div class="cabinet cab-pink" onclick="goToGame(this,'https://example.com/cola-game')">
+
+    <!-- 看板 -->
+    <div class="cab-topper">
+      <div class="cab-num">NO.001</div>
+      <div class="cab-title">コーラ<br>落とし穴<br>ゲーム</div>
+    </div>
+
+    <!-- シェル本体 -->
+    <div class="cab-shell">
+
+      <!-- 上部トリム -->
+      <div class="cab-top-trim">
+        <div class="trim-rivet"></div>
+        <div class="trim-stripe"></div>
+        <div class="trim-rivet"></div>
+      </div>
+
+      <!-- 画面ゾーン -->
+      <div class="cab-screen-zone">
+        <div class="screen-bezel">
+          <div class="screw screw-tl"></div>
+          <div class="screw screw-tr"></div>
+          <div class="screw screw-bl"></div>
+          <div class="screw screw-br"></div>
+          <div class="screen">
+            <div class="screen-content">
+              <div class="game-art">🥤</div>
+              <div class="game-desc">穴に落とせ！<br>それだけ。</div>
+            </div>
+            <div class="screen-ticker">
+              <span>★ COLA DROP GAME ★ NO SKILL REQUIRED ★ MAYBE ★ COLA DROP ★</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 継ぎ目 -->
+      <div class="cab-seam"></div>
+
+      <!-- 操作パネル -->
+      <div class="cab-panel">
+        <!-- コイン口エリア -->
+        <div class="panel-top">
+          <div class="coin-unit">
+            <div class="coin-slot-housing">
+              <div class="coin-slot"></div>
+              <div class="coin-slot"></div>
+            </div>
+            <div class="coin-label">INSERT COIN</div>
+          </div>
+          <div class="led-group">
+            <div class="led on" style="background:#ff2d78; box-shadow:0 0 6px #ff2d78;"></div>
+            <div class="led" style="background:#442233;"></div>
+            <div class="led on" style="background:#ff2d78; box-shadow:0 0 6px #ff2d78; animation-delay:0.9s;"></div>
+          </div>
+        </div>
+
+        <!-- コントロールエリア -->
+        <div class="panel-controls">
+          <!-- ジョイスティック -->
+          <div class="joystick-wrap">
+            <div class="joystick-gate"></div>
+            <div class="joystick-stick"></div>
+            <div class="joystick-ball"></div>
+          </div>
+
+          <!-- STARTボタン -->
+          <div class="btn-start-wrap">
+            <button class="btn-start"
+              onclick="event.stopPropagation();goToGame(this.closest('.cabinet'),'https://example.com/cola-game')">
+              ▶ START
+            </button>
+            <div class="btn-label">PLAYER 1</div>
+          </div>
+
+          <!-- サブボタン -->
+          <div class="sub-buttons">
+            <div class="sub-btn-row">
+              <div class="sub-btn" style="background:radial-gradient(circle at 35% 30%,#ff6699,#cc0044);"></div>
+              <div class="sub-btn" style="background:radial-gradient(circle at 35% 30%,#aa88ff,#552299);"></div>
+            </div>
+            <div class="sub-btn-label">SELECT</div>
+          </div>
+        </div>
+
+        <!-- スピーカー -->
+        <div class="speaker-grill">
+          <div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div>
+          <div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div>
+          <div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div>
+        </div>
+      </div>
+
+    </div><!-- /cab-shell -->
+
+    <div class="cab-feet">
+      <div class="cab-foot"></div>
+      <div class="cab-foot"></div>
+    </div>
+  </div><!-- /cabinet 1 -->
+
+
+  <!-- ====================================================
+       筐体 NO.002 — 止まれゲーム (シアン)
+       ==================================================== -->
+  <div class="cabinet cab-cyan" onclick="goToGame(this,'https://example.com/stop-game')">
+
+    <div class="cab-topper">
+      <div class="cab-num">NO.002</div>
+      <div class="cab-title">止まれ<br>ゲーム</div>
+    </div>
+
+    <div class="cab-shell">
+      <div class="cab-top-trim">
+        <div class="trim-rivet"></div>
+        <div class="trim-stripe"></div>
+        <div class="trim-rivet"></div>
+      </div>
+
+      <div class="cab-screen-zone">
+        <div class="screen-bezel">
+          <div class="screw screw-tl"></div>
+          <div class="screw screw-tr"></div>
+          <div class="screw screw-bl"></div>
+          <div class="screw screw-br"></div>
+          <div class="screen">
+            <div class="screen-content">
+              <div class="game-art" style="animation-delay:-1.2s">🛑</div>
+              <div class="game-desc">止まれば<br>いいだけ。<br>なぜ止まれない。</div>
+            </div>
+            <div class="screen-ticker">
+              <span>★ STOP GAME ★ CAN YOU STOP? ★ PROBABLY NOT ★ STOP GAME ★</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cab-seam"></div>
+
+      <div class="cab-panel">
+        <div class="panel-top">
+          <div class="coin-unit">
+            <div class="coin-slot-housing">
+              <div class="coin-slot"></div>
+              <div class="coin-slot"></div>
+            </div>
+            <div class="coin-label">INSERT COIN</div>
+          </div>
+          <div class="led-group">
+            <div class="led on" style="background:#00f5ff; box-shadow:0 0 6px #00f5ff;"></div>
+            <div class="led" style="background:#003344;"></div>
+            <div class="led on" style="background:#00f5ff; box-shadow:0 0 6px #00f5ff; animation-delay:0.7s;"></div>
+          </div>
+        </div>
+
+        <div class="panel-controls">
+          <div class="joystick-wrap">
+            <div class="joystick-gate"></div>
+            <div class="joystick-stick"></div>
+            <div class="joystick-ball"></div>
+          </div>
+          <div class="btn-start-wrap">
+            <button class="btn-start"
+              onclick="event.stopPropagation();goToGame(this.closest('.cabinet'),'https://example.com/stop-game')">
+              ▶ START
+            </button>
+            <div class="btn-label">PLAYER 1</div>
+          </div>
+          <div class="sub-buttons">
+            <div class="sub-btn-row">
+              <div class="sub-btn" style="background:radial-gradient(circle at 35% 30%,#00eeff,#006677);"></div>
+              <div class="sub-btn" style="background:radial-gradient(circle at 35% 30%,#ffee44,#aa8800);"></div>
+            </div>
+            <div class="sub-btn-label">SELECT</div>
+          </div>
+        </div>
+
+        <div class="speaker-grill">
+          <div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div>
+          <div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div>
+          <div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cab-feet">
+      <div class="cab-foot"></div>
+      <div class="cab-foot"></div>
+    </div>
+  </div><!-- /cabinet 2 -->
+
+
+  <!-- ====================================================
+       筐体 NO.003 — 肉球タップゲーム (グリーン)
+       ==================================================== -->
+  <div class="cabinet cab-green" onclick="goToGame(this,'https://example.com/paw-game')">
+
+    <div class="cab-topper">
+      <div class="cab-num">NO.003</div>
+      <div class="cab-title">肉球タップ<br>ゲーム</div>
+    </div>
+
+    <div class="cab-shell">
+      <div class="cab-top-trim">
+        <div class="trim-rivet"></div>
+        <div class="trim-stripe"></div>
+        <div class="trim-rivet"></div>
+      </div>
+
+      <div class="cab-screen-zone">
+        <div class="screen-bezel">
+          <div class="screw screw-tl"></div>
+          <div class="screw screw-tr"></div>
+          <div class="screw screw-bl"></div>
+          <div class="screw screw-br"></div>
+          <div class="screen">
+            <div class="screen-content">
+              <div class="game-art" style="animation-delay:-2.1s">🐾</div>
+              <div class="game-desc">ひたすら<br>タップ。<br>以上。</div>
+            </div>
+            <div class="screen-ticker">
+              <span>★ PAW TAP GAME ★ TAP TAP TAP ★ TAP MORE ★ PAW TAP ★</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cab-seam"></div>
+
+      <div class="cab-panel">
+        <div class="panel-top">
+          <div class="coin-unit">
+            <div class="coin-slot-housing">
+              <div class="coin-slot"></div>
+              <div class="coin-slot"></div>
+            </div>
+            <div class="coin-label">INSERT COIN</div>
+          </div>
+          <div class="led-group">
+            <div class="led on" style="background:#39ff14; box-shadow:0 0 6px #39ff14;"></div>
+            <div class="led" style="background:#113300;"></div>
+            <div class="led on" style="background:#39ff14; box-shadow:0 0 6px #39ff14; animation-delay:1.1s;"></div>
+          </div>
+        </div>
+
+        <div class="panel-controls">
+          <div class="joystick-wrap">
+            <div class="joystick-gate"></div>
+            <div class="joystick-stick"></div>
+            <div class="joystick-ball"></div>
+          </div>
+          <div class="btn-start-wrap">
+            <button class="btn-start"
+              onclick="event.stopPropagation();goToGame(this.closest('.cabinet'),'https://example.com/paw-game')">
+              ▶ START
+            </button>
+            <div class="btn-label">PLAYER 1</div>
+          </div>
+          <div class="sub-buttons">
+            <div class="sub-btn-row">
+              <div class="sub-btn" style="background:radial-gradient(circle at 35% 30%,#66ff33,#226600);"></div>
+              <div class="sub-btn" style="background:radial-gradient(circle at 35% 30%,#ff6644,#aa2200);"></div>
+            </div>
+            <div class="sub-btn-label">SELECT</div>
+          </div>
+        </div>
+
+        <div class="speaker-grill">
+          <div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div>
+          <div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div>
+          <div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cab-feet">
+      <div class="cab-foot"></div>
+      <div class="cab-foot"></div>
+    </div>
+  </div><!-- /cabinet 3 -->
+
+
+  <!--
+  ======================================================
+  筐体追加テンプレート
+  クラス: cab-pink / cab-cyan / cab-green から選択
+  LEDとサブボタンの色だけ好みで変更する
+
+  <div class="cabinet cab-pink" onclick="goToGame(this,'https://your-url.com')">
+    <div class="cab-topper">
+      <div class="cab-num">NO.004</div>
+      <div class="cab-title">ゲーム名</div>
+    </div>
+    <div class="cab-shell">
+      <div class="cab-top-trim">
+        <div class="trim-rivet"></div><div class="trim-stripe"></div><div class="trim-rivet"></div>
+      </div>
+      <div class="cab-screen-zone">
+        <div class="screen-bezel">
+          <div class="screw screw-tl"></div><div class="screw screw-tr"></div>
+          <div class="screw screw-bl"></div><div class="screw screw-br"></div>
+          <div class="screen">
+            <div class="screen-content">
+              <div class="game-art">🎮</div>
+              <div class="game-desc">説明文</div>
+            </div>
+            <div class="screen-ticker"><span>★ GAME NAME ★ SCROLL TEXT ★</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="cab-seam"></div>
+      <div class="cab-panel">
+        <div class="panel-top">
+          <div class="coin-unit">
+            <div class="coin-slot-housing"><div class="coin-slot"></div><div class="coin-slot"></div></div>
+            <div class="coin-label">INSERT COIN</div>
+          </div>
+          <div class="led-group">
+            <div class="led on" style="background:#ff2d78;box-shadow:0 0 6px #ff2d78;"></div>
+            <div class="led" style="background:#442233;"></div>
+            <div class="led on" style="background:#ff2d78;box-shadow:0 0 6px #ff2d78;animation-delay:.9s;"></div>
+          </div>
+        </div>
+        <div class="panel-controls">
+          <div class="joystick-wrap">
+            <div class="joystick-gate"></div><div class="joystick-stick"></div><div class="joystick-ball"></div>
+          </div>
+          <div class="btn-start-wrap">
+            <button class="btn-start" onclick="event.stopPropagation();goToGame(this.closest('.cabinet'),'https://your-url.com')">▶ START</button>
+            <div class="btn-label">PLAYER 1</div>
+          </div>
+          <div class="sub-buttons">
+            <div class="sub-btn-row">
+              <div class="sub-btn" style="background:radial-gradient(circle at 35% 30%,#ff6699,#cc0044);"></div>
+              <div class="sub-btn" style="background:radial-gradient(circle at 35% 30%,#aa88ff,#552299);"></div>
+            </div>
+            <div class="sub-btn-label">SELECT</div>
+          </div>
+        </div>
+        <div class="speaker-grill">
+          <div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div>
+          <div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div>
+          <div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div>
+        </div>
+      </div>
+    </div>
+    <div class="cab-feet"><div class="cab-foot"></div><div class="cab-foot"></div></div>
+  </div>
+  -->
+
+</main>
+
+<footer>
+  &copy; KUSO-GAME CENTER &nbsp;·&nbsp; ALL RIGHTS REFUSED &nbsp;·&nbsp; NO REFUNDS
+</footer>
+
+<script>
+function goToGame(cabinetEl, url) {
+  cabinetEl.classList.add('flash');
+  setTimeout(() => {
+    cabinetEl.classList.remove('flash');
+    // 本番: window.location.href = url;
+    alert('▶ GAME START!\n\n' + url + '\n\nここに遷移します');
+  }, 250);
+}
+</script>
+</body>
+</html>
+yasudashinya@yasudashinyanoMacBook-Air ~ % 
