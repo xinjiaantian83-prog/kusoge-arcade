@@ -2,1179 +2,1096 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>クソゲーセンター</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>RETRO SHELF — Game Collection</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Zen+Kaku+Gothic+New:wght@700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&display=swap');
 
-/* ============================================================
-   DESIGN TOKENS
-   ============================================================ */
 :root {
-  /* 背景 */
-  --bg:           #07070f;
-  --bg-grad:      #0f0f20;
-
-  /* 筐体ボディ（クリーム系オフホワイト — 共通ベース） */
-  --cream:        #e8dbc7;   /* メイン外装色 */
-  --cream-hi:     #f2ead8;   /* ハイライト面（上・左） */
-  --cream-sh:     #c8b99a;   /* シャドウ面（下・右） */
-  --cream-deep:   #b5a487;   /* 深い影・溝 */
-
-  /* 操作パネル面（やや暗いクリーム） */
-  --panel-cream:  #d4c4a8;
-  --panel-sh:     #bfaf94;
-
-  /* ベゼル/スクリーン周り */
-  --bezel:        #1a1a1a;
-  --bezel-hi:     #2e2e2e;
-  --bezel-sh:     #0a0a0a;
-  --screen-bg:    #000508;
-
-  /* ネオン */
-  --neon-yellow:  #ffe600;
-  --neon-cyan:    #00f5ff;
-  --neon-pink:    #ff2d78;
-  --neon-green:   #39ff14;
-
-  /* アクセント（テーマ色 — 各筐体でオーバーライド） */
-  --accent:       #ff2d78;
-  --accent-dark:  #8b0033;
-  --accent-glow:  rgba(255,45,120,0.5);
-
-  /* テキスト */
-  --text-light:   #dde0ff;
+  --bg: #0a0a0f;
+  --shelf-wood: #1a1008;
+  --shelf-edge: #3d2a10;
+  --shelf-light: #6b4a1e;
+  --neon-cyan: #00fff5;
+  --neon-pink: #ff006e;
+  --neon-yellow: #ffe600;
+  --neon-green: #39ff14;
+  --neon-purple: #bf5fff;
+  --neon-orange: #ff6b00;
+  --text-dim: #556;
+  --glow-intensity: 0 0 6px, 0 0 20px, 0 0 40px;
 }
 
-/* ============================================================
-   BASE
-   ============================================================ */
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+* { margin:0; padding:0; box-sizing:border-box; }
 
-body {
+html, body {
+  width: 100%; min-height: 100vh;
   background: var(--bg);
-  background-image:
-    radial-gradient(ellipse 100% 40% at 50% 0%, var(--bg-grad), transparent 70%),
-    repeating-linear-gradient(90deg, rgba(255,255,255,0.008) 0px, rgba(255,255,255,0.008) 1px, transparent 1px, transparent 40px);
-  color: var(--text-light);
   font-family: 'Press Start 2P', monospace;
-  min-height: 100vh;
   overflow-x: hidden;
-  -webkit-tap-highlight-color: transparent;
 }
 
-/* スキャンライン */
-body::after {
-  content:''; position:fixed; inset:0;
+/* ─── SCANLINE OVERLAY ─── */
+body::before {
+  content:'';
+  position: fixed; inset:0;
   background: repeating-linear-gradient(
-    0deg, transparent 0, transparent 3px,
-    rgba(0,0,0,0.1) 3px, rgba(0,0,0,0.1) 4px
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.15) 2px,
+    rgba(0,0,0,0.15) 4px
   );
-  pointer-events:none; z-index:9999;
+  pointer-events: none;
+  z-index: 9999;
 }
 
-/* ============================================================
-   HEADER
-   ============================================================ */
-header { text-align:center; padding:0 0 14px; }
-
-.marquee-strip {
-  background: var(--neon-pink);
-  overflow:hidden; padding:5px 0; margin-bottom:18px;
-}
-.marquee-text {
-  display:inline-block; white-space:nowrap;
-  font-size:8px; color:#000; letter-spacing:2px;
-  animation: marquee 16s linear infinite;
-}
-@keyframes marquee { from{transform:translateX(100vw)} to{transform:translateX(-100%)} }
-
-.site-title {
-  font-size:clamp(16px,5.5vw,24px);
-  color:var(--neon-yellow);
-  text-shadow:0 0 10px var(--neon-yellow), 0 0 28px rgba(255,230,0,0.35);
-  letter-spacing:3px;
-  animation:flicker 6s infinite;
-}
-@keyframes flicker {
-  0%,91%,100%{opacity:1} 92%{opacity:.55} 94%{opacity:1} 97%{opacity:.3} 99%{opacity:1}
-}
-
-.site-sub {
-  font-size:7px; color:var(--neon-cyan);
-  text-shadow:0 0 6px var(--neon-cyan);
-  margin-top:8px; letter-spacing:1px;
-}
-
-.insert-coin {
-  display:inline-block; margin-top:12px;
-  font-size:7px; color:var(--neon-green);
-  border:1px solid var(--neon-green); padding:4px 14px;
-  text-shadow:0 0 6px var(--neon-green);
-  animation:blink 1.4s step-end infinite;
-}
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-
-/* ============================================================
-   ARCADE FLOOR
-   ============================================================ */
-.arcade-floor {
+/* ─── HEADER ─── */
+header {
+  text-align: center;
+  padding: 28px 16px 12px;
   position: relative;
-  padding: 20px 0 90px;
-  max-width: 100%;
-  min-height: 980px;
+}
+.header-logo {
+  font-family: 'VT323', monospace;
+  font-size: 11px;
+  letter-spacing: 8px;
+  color: var(--neon-cyan);
+  text-shadow: 0 0 6px var(--neon-cyan), 0 0 20px var(--neon-cyan);
+  margin-bottom: 6px;
+  animation: flicker 6s infinite;
+}
+.header-title {
+  font-size: clamp(10px, 3.5vw, 16px);
+  color: #fff;
+  text-shadow: 0 0 8px var(--neon-pink), 0 0 30px var(--neon-pink);
+  letter-spacing: 2px;
+  margin-bottom: 4px;
+}
+.header-sub {
+  font-family: 'VT323', monospace;
+  font-size: 16px;
+  color: var(--neon-yellow);
+  letter-spacing: 4px;
+  opacity: 0.7;
+}
+.header-deco {
+  display: flex; align-items:center; justify-content:center; gap:8px;
+  margin-top: 14px;
+}
+.header-deco span {
+  height: 1px; width: 60px;
+  background: linear-gradient(90deg, transparent, var(--neon-cyan));
+}
+.header-deco span:last-child {
+  background: linear-gradient(90deg, var(--neon-cyan), transparent);
+}
+.header-deco i {
+  font-style: normal;
+  font-family: 'VT323', monospace;
+  font-size: 18px;
+  color: var(--neon-cyan);
+  animation: blink 1.2s step-end infinite;
+}
+
+/* ─── SHELF CONTAINER ─── */
+.shelf-container {
+  padding: 8px 10px 40px;
+  max-width: 500px;
   margin: 0 auto;
-  perspective: 1000px;
 }
 
-/* ============================================================
-   CABINET — 全体構造
-
-  .cabinet
-    .cab-topper        ← ネオンサインボード（看板）
-    .cab-shell         ← 筐体全体のシェル（クリーム色の箱）
-      .cab-top-trim    ← 上部トリム帯
-      .cab-screen-zone ← 画面ゾーン（凹み）
-        .screen-bezel  ← 黒ベゼル（額縁）
-          .screen      ← CRT画面
-      .cab-seam        ← パネルとの境目の継ぎ目
-      .cab-panel       ← 操作パネル面（傾斜感）
-        .panel-top     ← コイン口エリア
-        .panel-controls← ボタン・レバーエリア
-    .cab-feet          ← 脚台
-   ============================================================ */
-
-.cabinet {
-  width: 270px;
-  position: absolute;
-  left: 50%;
-  transform-origin: center top;
-  cursor:pointer;
-  user-select:none;
-  filter: drop-shadow(0 12px 32px rgba(0,0,0,0.85))
-          drop-shadow(0 4px 8px rgba(0,0,0,0.6));
+/* ─── SHELF ROW ─── */
+.shelf-row {
+  position: relative;
+  margin-bottom: 0;
+  padding-bottom: 0;
 }
-.cabinet:active { filter:
-  drop-shadow(0 6px 16px rgba(0,0,0,0.9))
-  drop-shadow(0 2px 4px rgba(0,0,0,0.7));
-}
-.cab-shell { transition:transform 0.07s ease; }
-.cab-topper { transition:transform 0.07s ease; }
-.cabinet:active .cab-shell,
-.cabinet:active .cab-topper { transform:translateY(3px); }
-
-/* ----------------------------------------------------------
-   看板 (cab-topper)
-   アクセントカラーのネオン看板として完全独立
-   ---------------------------------------------------------- */
-.cab-topper {
-  background: #111118;
-  border:4px solid #222230;
-  border-bottom:none;
-  border-radius:8px 8px 0 0;
-  padding:12px 14px 14px;
-  text-align:center;
-  position:relative;
-  overflow:hidden;
-
-  /* 看板の深み */
-  box-shadow:
-    inset 0 0 20px rgba(0,0,0,0.6),
-    inset 0 2px 0 rgba(255,255,255,0.06);
-}
-
-/* ネオン上ラインLED */
-.cab-topper::before {
-  content:'';
-  position:absolute; top:0; left:0; right:0; height:3px;
-  background:var(--accent);
-  box-shadow:
-    0 0 6px var(--accent),
-    0 0 18px var(--accent),
-    0 0 40px var(--accent-glow);
-}
-
-/* 看板内のグロウ効果 */
-.cab-topper::after {
-  content:'';
-  position:absolute; inset:0;
-  background:radial-gradient(ellipse at 50% 0%, var(--accent-glow) 0%, transparent 65%);
-  pointer-events:none;
-}
-
-.cab-num {
-  font-size:6px;
-  color:var(--accent);
-  opacity:0.6;
-  letter-spacing:3px;
-  margin-bottom:6px;
-  position:relative; z-index:1;
-}
-
-.cab-title {
-  font-size:clamp(10px,3.3vw,14px);
-  color:var(--accent);
-  text-shadow:
-    0 0 8px var(--accent),
-    0 0 20px var(--accent),
-    0 0 40px var(--accent-glow);
-  line-height:1.75;
-  letter-spacing:1px;
-  position:relative; z-index:1;
-  animation:titlePulse 3s ease-in-out infinite;
-}
-@keyframes titlePulse {
-  0%,100%{ text-shadow:0 0 8px var(--accent),0 0 20px var(--accent),0 0 40px var(--accent-glow); }
-  50%    { text-shadow:0 0 12px var(--accent),0 0 30px var(--accent),0 0 60px var(--accent-glow); }
-}
-
-/* ----------------------------------------------------------
-   筐体シェル本体 (cab-shell) — クリーム色の厚い箱
-   ---------------------------------------------------------- */
-.cab-shell {
-  background: var(--cream);
-  border:4px solid var(--cream-deep);
-  border-top:none;
-  border-radius:0 0 6px 6px;
-  position:relative;
-
-  /* 立体感：左上ハイライト + 右下シャドウ */
-  box-shadow:
-    /* 内側の面感 */
-    inset 5px 0 0 var(--cream-hi),
-    inset -5px 0 0 var(--cream-sh),
-    inset 0 -5px 0 var(--cream-sh),
-    /* 外の落ち影（drop-shadowと二重で深み） */
-    6px 0 0 var(--cream-deep),
-    -4px 0 0 var(--cream-deep);
-}
-
-/* ----------------------------------------------------------
-   上部トリム帯（看板直下の装飾ライン）
-   ---------------------------------------------------------- */
-.cab-top-trim {
-  height:20px;
-  background:linear-gradient(to bottom, var(--cream-hi) 0%, var(--cream) 60%, var(--cream-sh) 100%);
-  border-bottom:3px solid var(--cream-deep);
-  display:flex; align-items:center; justify-content:space-between;
-  padding:0 16px;
-}
-
-/* トリム帯のリベット */
-.trim-rivet {
-  width:7px; height:7px;
-  border-radius:50%;
-  background:radial-gradient(circle at 35% 30%, var(--cream-hi), var(--cream-sh));
-  border:1px solid var(--cream-deep);
-  box-shadow:inset 0 1px 2px rgba(0,0,0,0.25), 0 1px 0 rgba(255,255,255,0.4);
-}
-
-/* アクセントストライプ（中央の細ライン） */
-.trim-stripe {
-  flex:1; height:3px; margin:0 10px;
-  background:linear-gradient(to right, transparent, var(--accent), transparent);
-  box-shadow:0 0 6px var(--accent);
-  border-radius:2px;
-}
-
-/* ----------------------------------------------------------
-   画面ゾーン（凹み表現）
-   ---------------------------------------------------------- */
-.cab-screen-zone {
-  /* クリームボディより暗く → 凹んで見える */
-  background: var(--cream-sh);
-  margin:0 14px;
-  padding:14px 14px 12px;
-  border-radius:4px;
-  position:relative;
-
-  box-shadow:
-    /* 凹み：内側上左が暗い */
-    inset 3px 3px 8px rgba(0,0,0,0.35),
-    inset -2px -2px 6px rgba(0,0,0,0.2),
-    /* 凹み外縁のハイライト */
-    0 -1px 0 var(--cream-hi),
-    0 1px 0 var(--cream-deep);
-}
-
-/* ベゼル（黒い額縁） */
-.screen-bezel {
-  background: var(--bezel);
-  border-radius:6px;
-  padding:10px;
-  position:relative;
-
-  /* 厚い額縁の立体感 */
-  box-shadow:
-    /* 外周のハイライト・シャドウ */
-    inset 2px 2px 0 var(--bezel-hi),
-    inset -2px -2px 0 var(--bezel-sh),
-    /* ベゼル自体の落ち影 */
-    0 2px 8px rgba(0,0,0,0.8),
-    /* 画面の光が漏れるグロウ */
-    0 0 0 1px rgba(0,0,0,0.9),
-    0 0 16px rgba(0,0,0,0.5);
-}
-
-/* ベゼル角のネジ */
-.screw {
-  position:absolute;
-  width:8px; height:8px;
-  border-radius:50%;
-  background:radial-gradient(circle at 40% 35%, #555, #1a1a1a);
-  border:1px solid #0a0a0a;
-  box-shadow:inset 0 1px 1px rgba(255,255,255,0.12);
-}
-.screw::after {
-  content:'';
-  position:absolute;
-  top:50%; left:50%; transform:translate(-50%,-50%);
-  width:4px; height:1px;
-  background:rgba(0,0,0,0.5);
-  border-radius:1px;
-}
-.screw-tl { top:4px; left:4px; }
-.screw-tr { top:4px; right:4px; }
-.screw-bl { bottom:4px; left:4px; }
-.screw-br { bottom:4px; right:4px; }
-
-/* CRT画面 */
-.screen {
-  background:var(--screen-bg);
-  aspect-ratio:4/3;
-  border-radius:3px;
-  overflow:hidden;
-  position:relative;
-  box-shadow:
-    inset 0 0 30px rgba(0,0,0,0.9),
-    inset 0 0 0 1px rgba(255,255,255,0.025);
-}
-
-/* CRTグロウ（周囲暗く・中央明るい） */
-.screen::before {
-  content:''; position:absolute; inset:0;
-  background:radial-gradient(ellipse at 45% 40%,
-    rgba(255,255,255,0.03) 0%,
-    transparent 60%
-  );
-  z-index:1; pointer-events:none;
-}
-.screen::after {
-  content:''; position:absolute; inset:0;
-  background:radial-gradient(ellipse at center,
-    transparent 50%,
-    rgba(0,0,0,0.65) 100%
-  );
-  z-index:4; pointer-events:none;
-}
-
-/* 画面コンテンツ */
-.screen-content {
-  position:relative; width:100%; height:100%;
-  display:flex; flex-direction:column;
-  align-items:center; justify-content:center;
-  gap:8px; padding:12px;
-  z-index:2;
-}
-
-.game-art {
-  font-size:clamp(38px,12vw,56px); line-height:1;
-  filter:drop-shadow(0 0 10px rgba(255,255,255,0.2));
-  animation:floatY 3s ease-in-out infinite;
-}
-@keyframes floatY { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
-
-.game-desc {
-  font-family:'Zen Kaku Gothic New',sans-serif;
-  font-weight:700;
-  font-size:clamp(10px,3.2vw,13px);
-  text-align:center; line-height:1.55; color:#bbc0e0;
-}
-
-.screen-ticker {
-  position:absolute; bottom:5px; left:0; right:0;
-  font-size:6px; color:rgba(255,255,255,0.35);
-  white-space:nowrap; overflow:hidden; z-index:3;
-}
-.screen-ticker span {
-  display:inline-block;
-  animation:tickerMove 12s linear infinite;
-}
-@keyframes tickerMove { from{transform:translateX(110%)} to{transform:translateX(-110%)} }
-
-/* ----------------------------------------------------------
-   継ぎ目（画面↔操作パネルの分割ライン）
-   ---------------------------------------------------------- */
-.cab-seam {
-  height:16px;
-  margin:0 14px;
-  background:linear-gradient(to bottom,
-    var(--cream-sh) 0%,
-    var(--cream-deep) 30%,
-    var(--cream-sh) 60%,
-    var(--cream) 100%
-  );
-  border-top:2px solid var(--cream-deep);
-  border-bottom:2px solid var(--cream-hi);
-  position:relative;
-}
-
-/* 継ぎ目中央のアクセントバー */
-.cab-seam::after {
-  content:'';
-  position:absolute;
-  top:50%; left:20px; right:20px; height:2px;
-  transform:translateY(-50%);
-  background:linear-gradient(to right, transparent, var(--accent), transparent);
-  box-shadow:0 0 6px var(--accent);
-  opacity:.6;
-}
-
-/* ----------------------------------------------------------
-   操作パネル (cab-panel)
-   ここが「物理感」の核心
-   ---------------------------------------------------------- */
-.cab-panel {
-  margin:0 14px 14px;
-  background:var(--panel-cream);
-  border-radius:2px 2px 4px 4px;
-  overflow:hidden;
-  position:relative;
-
-  /* パネル面の立体感：上から光が当たっている */
-  box-shadow:
-    inset 0 2px 0 var(--cream-hi),
-    inset 2px 0 0 rgba(255,255,255,0.3),
-    inset -2px 0 0 var(--panel-sh),
-    inset 0 -2px 0 var(--panel-sh),
-    0 2px 4px rgba(0,0,0,0.4);
-}
-
-/* パネル上部：コイン投入口エリア */
-.panel-top {
-  background:var(--panel-sh);
-  padding:10px 18px 8px;
-  border-bottom:2px solid var(--cream-deep);
-  display:flex; align-items:center; justify-content:space-between;
-  gap:8px;
-
-  box-shadow:inset 0 2px 4px rgba(0,0,0,0.2);
-}
-
-/* コイン投入口ユニット */
-.coin-unit {
-  display:flex; flex-direction:column; align-items:center; gap:5px;
-}
-
-.coin-slot-housing {
-  background: #1a1612;
-  border:2px solid #0a0908;
-  border-radius:3px;
-  padding:5px 8px;
-  box-shadow:
-    inset 0 2px 4px rgba(0,0,0,0.8),
-    0 1px 0 rgba(255,255,255,0.15);
-}
-.coin-slot {
-  width:30px; height:5px;
-  background:#0a0908;
-  border-radius:3px;
-  border:1px solid rgba(255,255,255,0.08);
-  box-shadow:inset 0 2px 3px rgba(0,0,0,1);
-}
-.coin-slot + .coin-slot { margin-top:4px; }
-
-.coin-label {
-  font-size:5px;
-  color:rgba(0,0,0,0.45);
-  letter-spacing:1px;
-}
-
-/* 画面脇の小さなLEDインジケーター */
-.led-group {
-  display:flex; flex-direction:column; gap:5px; align-items:center;
-}
-.led {
-  width:7px; height:7px;
-  border-radius:50%;
-  border:1px solid rgba(0,0,0,0.3);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,0.2);
-}
-.led.on {
-  animation:ledBlink 1.8s step-end infinite;
-}
-@keyframes ledBlink { 0%,100%{opacity:1} 50%{opacity:.2} }
-
-/* パネル下部：メインコントロール */
-.panel-controls {
-  padding:14px 18px 16px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:14px;
-}
-
-/* ジョイスティック */
-.joystick-wrap {
-  width:44px; height:50px;
-  position:relative; flex-shrink:0;
-}
-.joystick-gate {
-  /* ゲート（根本の台座） */
-  position:absolute; bottom:0; left:50%; transform:translateX(-50%);
-  width:44px; height:20px;
-  background:radial-gradient(ellipse at 50% 20%, #3a3530, #1a1512);
-  border-radius:50%;
-  border:2px solid #0a0908;
-  box-shadow:
-    0 3px 6px rgba(0,0,0,0.6),
-    inset 0 2px 4px rgba(255,255,255,0.05);
-}
-.joystick-stick {
-  position:absolute; bottom:12px; left:50%; transform:translateX(-50%);
-  width:10px; height:28px;
-  background:linear-gradient(to right, #3a3530, #2a2520, #3a3530);
-  border-radius:5px;
-  border:1px solid #0a0908;
-  box-shadow:2px 0 4px rgba(0,0,0,0.4);
-}
-.joystick-ball {
-  position:absolute; bottom:32px; left:50%; transform:translateX(-50%);
-  width:20px; height:20px;
-  border-radius:50%;
-  background:radial-gradient(circle at 35% 30%, #555, #1a1512);
-  border:2px solid #0a0908;
-  box-shadow:
-    0 3px 6px rgba(0,0,0,0.5),
-    inset 0 2px 3px rgba(255,255,255,0.1);
-}
-
-/* STARTボタン（メインの大ボタン） */
-.btn-start-wrap {
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:6px;
-}
-
-.btn-start {
-  width:100%;
-  font-family:'Press Start 2P', monospace;
-  font-size:clamp(8px,2.6vw,11px);
-  letter-spacing:1px;
-  padding:16px 8px;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-  color:#fff;
-
-  /* ボタン本体のグラデ */
-  background:linear-gradient(to bottom,
-    color-mix(in srgb, var(--accent) 80%, white 20%) 0%,
-    var(--accent) 40%,
-    var(--accent-dark) 100%
-  );
-
-  /* 物理ボタン感：厚み・押せる感 */
-  box-shadow:
-    0 6px 0 var(--accent-dark),         /* 底面（厚み） */
-    0 7px 0 rgba(0,0,0,0.5),            /* 底面の影 */
-    inset 0 2px 0 rgba(255,255,255,0.25),/* 上面ハイライト */
-    inset 0 -1px 0 rgba(0,0,0,0.2),    /* 下面シャドウ */
-    0 0 20px var(--accent-glow);        /* ネオングロウ */
-
-  position:relative; top:0;
-  transition:top 0.06s ease, box-shadow 0.06s ease;
-  text-shadow:0 1px 3px rgba(0,0,0,0.4);
-}
-.btn-start:active {
-  top:4px;
-  box-shadow:
-    0 2px 0 var(--accent-dark),
-    0 3px 0 rgba(0,0,0,0.4),
-    inset 0 2px 0 rgba(0,0,0,0.15),
-    0 0 10px var(--accent-glow);
-}
-
-.btn-label {
-  font-size:5px;
-  color:rgba(0,0,0,0.4);
-  letter-spacing:2px;
-}
-
-/* サブボタン群（右側） */
-.sub-buttons {
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:10px;
-  flex-shrink:0;
-}
-
-.sub-btn-row {
-  display:flex; gap:10px;
-}
-
-.sub-btn {
-  width:22px; height:22px;
-  border-radius:50%;
-  border:2px solid rgba(0,0,0,0.35);
-  cursor:default;
-  position:relative;
-
-  box-shadow:
-    0 4px 0 rgba(0,0,0,0.4),
-    inset 0 2px 0 rgba(255,255,255,0.25),
-    inset 0 -1px 0 rgba(0,0,0,0.2);
-}
-
-.sub-btn-label {
-  font-size:4px;
-  color:rgba(0,0,0,0.35);
-  letter-spacing:1px;
-  text-align:center;
-}
-
-/* スピーカーグリル */
-.speaker-grill {
-  display:grid;
-  grid-template-columns:repeat(5,5px);
-  gap:4px;
-  padding:8px 12px;
-  background:var(--panel-sh);
-  border-top:2px solid var(--cream-deep);
-  justify-content:center;
-}
-.sp-hole {
-  width:5px; height:5px;
-  border-radius:50%;
-  background:#1a1612;
-  border:1px solid rgba(0,0,0,0.5);
-  box-shadow:inset 0 1px 2px rgba(0,0,0,0.8);
-}
-
-/* ----------------------------------------------------------
-   脚台
-   ---------------------------------------------------------- */
-.cab-feet {
-  display:flex;
-  justify-content:space-between;
-  padding:0 24px;
-}
-.cab-foot {
-  width:20px; height:18px;
-  background:linear-gradient(to bottom, var(--cream-deep), #8a7a62);
-  border-radius:0 0 4px 4px;
-  border:2px solid #6a5a42;
-  border-top:none;
-  box-shadow:2px 4px 8px rgba(0,0,0,0.6);
-}
-
-/* ============================================================
-   カラーテーマ（各筐体でCSS変数だけ差し替え）
-   ============================================================ */
-
-/* ピンク / マゼンタ */
-.cab-pink {
-  --accent:       #ff2d78;
-  --accent-dark:  #8b0033;
-  --accent-glow:  rgba(255,45,120,0.5);
-}
-.cab-pink .screen-content { --screen-tint:#120008; }
-.cab-pink .screen { background:radial-gradient(ellipse at 30% 25%, #120008, #000508); }
-.cab-pink .btn-start { color:#fff; }
-
-/* シアン / ブルー */
-.cab-cyan {
-  --accent:       #00f5ff;
-  --accent-dark:  #006677;
-  --accent-glow:  rgba(0,245,255,0.4);
-}
-.cab-cyan .screen { background:radial-gradient(ellipse at 30% 25%, #001420, #000508); }
-.cab-cyan .btn-start { color:#000; text-shadow:none; }
-
-/* ライム / グリーン */
-.cab-green {
-  --accent:       #39ff14;
-  --accent-dark:  #1a6600;
-  --accent-glow:  rgba(57,255,20,0.4);
-}
-.cab-green .screen { background:radial-gradient(ellipse at 30% 25%, #001400, #000508); }
-.cab-green .btn-start { color:#000; text-shadow:none; }
-
-/* ============================================================
-   FOOTER
-   ============================================================ */
-footer {
-  text-align:center; padding:28px 16px;
-  font-size:6px; color:rgba(255,255,255,0.13); letter-spacing:2px;
-}
-
-/* ============================================================
-   タップフラッシュ演出
-   ============================================================ */
-.cabinet.flash .cab-shell,
-.cabinet.flash .cab-topper {
-  filter:brightness(1.5) saturate(1.3);
-  transition:filter 0.12s;
-}
-  /* ===== 擬似3D配置（弱め版） ===== */
-.arcade-floor .cabinet:nth-child(1) {
-  top: 40px;
-  transform: translateX(-50%) scale(1);
-  z-index: 3;
-}
-
-.arcade-floor .cabinet:nth-child(2) {
-  top: 300px;
-  transform: translateX(-68%) scale(0.72) rotate(-4deg);
-  opacity: 0.42;
+.shelf-board {
+  position: relative;
   z-index: 2;
+  height: 14px;
+  background: linear-gradient(180deg,
+    var(--shelf-light) 0%,
+    var(--shelf-edge) 30%,
+    var(--shelf-wood) 60%,
+    #0e0906 100%
+  );
+  border-radius: 2px;
+  box-shadow:
+    0 4px 12px rgba(0,0,0,0.8),
+    0 -1px 0 rgba(255,200,80,0.15),
+    inset 0 1px 0 rgba(255,200,80,0.2);
+  margin-bottom: 0;
 }
-
-.arcade-floor .cabinet:nth-child(3) {
-  top: 300px;
-  transform: translateX(-32%) scale(0.72) rotate(4deg);
-  opacity: 0.42;
-  z-index: 1;
-}
-   .arcade-floor::before {
+.shelf-board::after {
   content: '';
   position: absolute;
-  left: 50%;
-  bottom: 20px;
-  transform: translateX(-50%);
-  width: 92%;
-  height: 360px;
-  background:
-    linear-gradient(to top, rgba(0,0,0,0.65), transparent 70%),
-    repeating-linear-gradient(
-      90deg,
-      rgba(0,245,255,0.08) 0px,
-      rgba(0,245,255,0.08) 2px,
-      transparent 2px,
-      transparent 44px
-    );
-  clip-path: polygon(12% 0%, 88% 0%, 100% 100%, 0% 100%);
-  opacity: 0.35;
-  pointer-events: none;
+  top: 0; left: 4px; right: 4px; height: 2px;
+  background: linear-gradient(90deg,
+    transparent, rgba(255,200,80,0.25) 20%,
+    rgba(255,200,80,0.4) 50%,
+    rgba(255,200,80,0.25) 80%,
+    transparent
+  );
+  border-radius: 1px;
 }
-   @media (max-width: 480px) {
-  .arcade-floor {
-    min-height: 820px;
-  }
+.shelf-items {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 14px 6px 0;
+  background: linear-gradient(180deg,
+    rgba(5,5,10,0) 0%,
+    rgba(10,8,5,0.4) 100%
+  );
+}
 
-  .cabinet {
-    width: 230px;
-  }
+/* ─── DEVICE CARD ─── */
+.device-card {
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.15s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.device-card:active { transform: scale(0.93); }
+.device-card:hover .device-body { filter: brightness(1.15); }
 
-  .arcade-floor .cabinet:nth-child(1) {
-    top: 30px;
-    transform: translateX(-50%) scale(1);
-  }
+/* RARE BLINK */
+.device-card.rare .device-body {
+  animation: rarePulse 3s ease-in-out infinite;
+}
 
-  .arcade-floor .cabinet:nth-child(2) {
-    top: 250px;
-    transform: translateX(-66%) scale(0.66) rotate(-4deg);
-    opacity: 0.36;
-  }
+/* ─── DEVICE SHAPES ─── */
+.device-body {
+  position: relative;
+  width: 100%;
+  transition: filter 0.2s;
+}
 
-  .arcade-floor .cabinet:nth-child(3) {
-    top: 250px;
-    transform: translateX(-34%) scale(0.66) rotate(4deg);
-    opacity: 0.36;
+/* GameBoy style */
+.gb-body {
+  background: linear-gradient(160deg, #c8b8f0 0%, #8060c0 60%, #5040a0 100%);
+  border-radius: 10px 10px 20px 20px;
+  padding: 6px 6px 10px;
+  box-shadow:
+    inset 0 2px 4px rgba(255,255,255,0.3),
+    inset 0 -2px 4px rgba(0,0,0,0.4),
+    0 6px 18px rgba(0,0,0,0.7),
+    0 0 0 1px rgba(0,0,0,0.5);
+}
+.gb-screen-bezel {
+  background: #1a1a2a;
+  border-radius: 5px 5px 3px 3px;
+  padding: 4px;
+  margin-bottom: 5px;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.8);
+}
+.gb-brand {
+  font-family: 'VT323', monospace;
+  font-size: 8px;
+  color: #a090e0;
+  text-align: center;
+  margin-bottom: 2px;
+  letter-spacing: 1px;
+}
+.gb-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 4px;
+}
+.gb-dpad {
+  width: 18px; height: 18px;
+  background: #333;
+  clip-path: polygon(33% 0%, 66% 0%, 66% 33%, 100% 33%, 100% 66%, 66% 66%, 66% 100%, 33% 100%, 33% 66%, 0% 66%, 0% 33%, 33% 33%);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
+.gb-buttons { display: flex; gap: 4px; }
+.gb-btn {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
+.gb-speaker {
+  display: flex; flex-direction: column; gap: 2px;
+  margin-top: 4px; margin-right: 4px;
+}
+.gb-speaker span {
+  width: 14px; height: 1px;
+  background: rgba(0,0,0,0.4);
+  border-radius: 1px;
+}
+
+/* Game & Watch style */
+.gw-body {
+  background: linear-gradient(160deg, #e8d890 0%, #c8a830 60%, #a08020 100%);
+  border-radius: 8px;
+  padding: 5px 5px 7px;
+  box-shadow:
+    inset 0 2px 3px rgba(255,255,255,0.4),
+    inset 0 -2px 3px rgba(0,0,0,0.3),
+    0 5px 15px rgba(0,0,0,0.7),
+    0 0 0 1px rgba(0,0,0,0.4);
+}
+.gw-top {
+  display: flex; gap: 3px; margin-bottom: 4px;
+}
+.gw-screen-bezel {
+  flex: 1;
+  background: #0a1a0a;
+  border-radius: 3px;
+  padding: 3px;
+  box-shadow: inset 0 1px 4px rgba(0,0,0,0.9);
+}
+.gw-time {
+  width: 22px;
+  background: #111;
+  border-radius: 2px;
+  display: flex; flex-direction:column;
+  align-items: center; justify-content: center;
+  gap: 1px; padding: 2px;
+}
+.gw-time-digit {
+  font-family: 'VT323', monospace;
+  font-size: 9px;
+  color: #00ff88;
+  text-shadow: 0 0 4px #00ff88;
+  line-height: 1;
+}
+.gw-controls {
+  display: flex; justify-content: space-around;
+  padding: 2px 4px 0;
+}
+.gw-btn {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: #555;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.6), 0 1px 0 rgba(255,255,255,0.1);
+}
+
+/* Tabletop Invader */
+.inv-body {
+  background: linear-gradient(160deg, #404050 0%, #202030 60%, #101020 100%);
+  border-radius: 6px 6px 3px 3px;
+  padding: 5px 5px 6px;
+  box-shadow:
+    inset 0 1px 3px rgba(255,255,255,0.1),
+    0 6px 16px rgba(0,0,0,0.8),
+    0 0 0 1px rgba(80,80,120,0.3);
+  position: relative;
+}
+.inv-body::before {
+  content: '';
+  position: absolute; top:-6px; left: 6px; right: 6px; height: 6px;
+  background: linear-gradient(180deg, #505060 0%, #303040 100%);
+  border-radius: 3px 3px 0 0;
+  box-shadow: 0 -2px 6px rgba(0,0,0,0.6);
+}
+.inv-screen-bezel {
+  background: #050510;
+  border-radius: 3px;
+  padding: 3px;
+  margin-bottom: 4px;
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.9);
+  position: relative;
+  overflow: hidden;
+}
+.inv-controls {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0 3px;
+}
+.inv-joy {
+  width: 14px; height: 14px;
+  background: radial-gradient(#666, #333);
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.8), 0 0 0 2px #222;
+}
+.inv-fire {
+  width: 14px; height: 8px;
+  background: linear-gradient(180deg, #ff3300, #cc1100);
+  border-radius: 3px;
+  box-shadow: 0 0 6px #ff3300, 0 1px 3px rgba(0,0,0,0.6);
+}
+.inv-coin {
+  font-family: 'VT323', monospace;
+  font-size: 7px;
+  color: var(--neon-yellow);
+  text-shadow: 0 0 4px var(--neon-yellow);
+}
+
+/* Brick-game style */
+.bk-body {
+  background: linear-gradient(160deg, #b0e0b0 0%, #70b070 60%, #508050 100%);
+  border-radius: 8px 8px 14px 14px;
+  padding: 5px 5px 8px;
+  box-shadow:
+    inset 0 2px 3px rgba(255,255,255,0.35),
+    inset 0 -2px 3px rgba(0,0,0,0.3),
+    0 5px 16px rgba(0,0,0,0.7),
+    0 0 0 1px rgba(0,0,0,0.4);
+}
+.bk-screen-bezel {
+  background: #1a2a1a;
+  border-radius: 4px;
+  padding: 3px;
+  margin-bottom: 4px;
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.8);
+}
+.bk-controls {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 3px; padding: 0 3px;
+}
+.bk-btn {
+  height: 8px;
+  background: #3a5a3a;
+  border-radius: 2px;
+  box-shadow: 0 2px 3px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+}
+
+/* Pocket Racer */
+.pr-body {
+  background: linear-gradient(160deg, #f04040 0%, #b02020 60%, #801010 100%);
+  border-radius: 50% 50% 12px 12px / 30% 30% 12px 12px;
+  padding: 8px 6px 6px;
+  box-shadow:
+    inset 0 3px 5px rgba(255,255,255,0.3),
+    inset 0 -2px 3px rgba(0,0,0,0.4),
+    0 6px 18px rgba(0,0,0,0.7),
+    0 0 0 1px rgba(0,0,0,0.5);
+}
+.pr-screen-bezel {
+  background: #050505;
+  border-radius: 4px;
+  padding: 3px;
+  margin-bottom: 4px;
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.9);
+}
+.pr-controls {
+  display: flex; justify-content: center; gap: 8px;
+}
+.pr-btn {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
+
+/* Neon Racer — slim landscape */
+.nr-body {
+  background: linear-gradient(160deg, #202040 0%, #101030 80%);
+  border-radius: 6px;
+  padding: 4px;
+  box-shadow:
+    0 0 0 1px var(--neon-cyan),
+    0 0 12px rgba(0,255,245,0.3),
+    0 6px 16px rgba(0,0,0,0.8);
+}
+.nr-screen-bezel {
+  background: #000;
+  border-radius: 3px;
+  padding: 2px;
+  margin-bottom: 3px;
+  box-shadow: inset 0 1px 4px rgba(0,0,0,0.9), 0 0 0 1px rgba(0,255,245,0.3);
+}
+.nr-controls {
+  display: flex; justify-content: space-between; padding: 0 2px;
+}
+.nr-stick {
+  width: 16px; height: 6px;
+  background: linear-gradient(180deg, #333, #111);
+  border-radius: 3px;
+  box-shadow: 0 0 4px var(--neon-cyan), 0 1px 2px rgba(0,0,0,0.8);
+}
+.nr-fire {
+  width: 10px; height: 10px;
+  background: var(--neon-pink);
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--neon-pink), 0 0 12px var(--neon-pink);
+}
+
+/* ─── MINI SCREEN ─── */
+.mini-screen {
+  width: 100%;
+  aspect-ratio: 1.4 / 1;
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+  image-rendering: pixelated;
+}
+canvas.mini-screen {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ─── CARD INFO AREA ─── */
+.device-info {
+  width: 100%;
+  text-align: center;
+  padding: 5px 2px 2px;
+}
+.device-title {
+  font-family: 'VT323', monospace;
+  font-size: 13px;
+  color: #ddd;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+.device-stars {
+  font-size: 8px;
+  margin-bottom: 2px;
+  letter-spacing: 1px;
+}
+.device-play {
+  font-size: 7px;
+  color: var(--neon-green);
+  text-shadow: 0 0 6px var(--neon-green);
+  animation: blink 1.4s step-end infinite;
+  letter-spacing: 2px;
+}
+.device-card.rare .device-play {
+  color: var(--neon-yellow);
+  text-shadow: 0 0 8px var(--neon-yellow), 0 0 20px var(--neon-yellow);
+}
+
+/* ─── LAUNCH OVERLAY ─── */
+.launch-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 10000;
+  pointer-events: none;
+  transition: background 0.3s;
+}
+.launch-overlay.active {
+  background: rgba(0,0,0,0.92);
+  pointer-events: all;
+}
+.launch-box {
+  text-align: center;
+  transform: scale(0);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.launch-overlay.active .launch-box {
+  transform: scale(1);
+}
+.launch-title {
+  font-size: clamp(10px, 3vw, 16px);
+  color: #fff;
+  margin-bottom: 12px;
+  text-shadow: 0 0 12px currentColor;
+}
+.launch-game-name {
+  font-family: 'VT323', monospace;
+  font-size: clamp(20px, 6vw, 36px);
+  margin-bottom: 16px;
+}
+.launch-bar-wrap {
+  width: 200px; height: 8px;
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0 auto 16px;
+}
+.launch-bar {
+  height: 100%;
+  width: 0%;
+  border-radius: 4px;
+  transition: width 0.8s linear;
+}
+.launch-status {
+  font-family: 'VT323', monospace;
+  font-size: 14px;
+  color: #888;
+  letter-spacing: 2px;
+}
+.launch-close {
+  margin-top: 20px;
+  font-size: 8px;
+  color: #555;
+  cursor: pointer;
+  padding: 8px;
+}
+
+/* ─── FOOTER ─── */
+footer {
+  text-align: center;
+  padding: 20px 16px 40px;
+}
+.footer-text {
+  font-family: 'VT323', monospace;
+  font-size: 12px;
+  color: #333;
+  letter-spacing: 2px;
+}
+
+/* ─── ANIMATIONS ─── */
+@keyframes blink {
+  0%,100%{ opacity:1 } 50%{ opacity:0 }
+}
+@keyframes flicker {
+  0%,95%,100%{ opacity:1 }
+  96%{ opacity:0.6 }
+  97%{ opacity:1 }
+  98%{ opacity:0.4 }
+  99%{ opacity:1 }
+}
+@keyframes rarePulse {
+  0%,100%{ box-shadow: 0 6px 18px rgba(0,0,0,0.7); filter: brightness(1); }
+  50%{
+    box-shadow: 0 0 20px var(--neon-yellow), 0 0 40px var(--neon-yellow), 0 6px 18px rgba(0,0,0,0.5);
+    filter: brightness(1.3);
   }
+}
+@keyframes scanUp {
+  0%{ transform: translateY(100%) }
+  100%{ transform: translateY(-100%) }
+}
+@keyframes pixelFade {
+  0%{ opacity:0; transform: scale(0.8) }
+  100%{ opacity:1; transform: scale(1) }
 }
 </style>
 </head>
 <body>
 
-<!-- ========== HEADER ========== -->
 <header>
-  <div class="marquee-strip">
-    <span class="marquee-text">
-      ★ KUSO-GAME CENTER ★ クソゲーセンター ★ INSERT COIN ★ PRESS START ★ クソゲーセンター ★ ALL SKILL REFUSED ★
-    </span>
+  <div class="header-logo">◆ PIXEL VAULT COLLECTION ◆</div>
+  <div class="header-title">RETRO GAME SHELF</div>
+  <div class="header-sub">— SELECT YOUR DEVICE —</div>
+  <div class="header-deco">
+    <span></span>
+    <i>▼</i>
+    <span></span>
   </div>
-  <div class="site-title">クソゲーセンター</div>
-  <div class="site-sub">THE WORLD'S WORST GAME ARCADE</div>
-  <div class="insert-coin">★ INSERT COIN ★</div>
 </header>
 
-<!-- ========== ARCADE FLOOR ========== -->
-<main class="arcade-floor">
-
-  <!-- ====================================================
-       筐体 NO.001 — コーラ落とし穴ゲーム (ピンク)
-       ==================================================== -->
-  <div class="cabinet cab-pink" onclick="goToGame(this,'https://example.com/cola-game')">
-
-    <!-- 看板 -->
-    <div class="cab-topper">
-      <div class="cab-num">NO.001</div>
-      <div class="cab-title">コーラ<br>落とし穴<br>ゲーム</div>
-    </div>
-
-    <!-- シェル本体 -->
-    <div class="cab-shell">
-
-      <!-- 上部トリム -->
-      <div class="cab-top-trim">
-        <div class="trim-rivet"></div>
-        <div class="trim-stripe"></div>
-        <div class="trim-rivet"></div>
-      </div>
-
-      <!-- 画面ゾーン -->
-      <div class="cab-screen-zone">
-        <div class="screen-bezel">
-          <div class="screw screw-tl"></div>
-          <div class="screw screw-tr"></div>
-          <div class="screw screw-bl"></div>
-          <div class="screw screw-br"></div>
-          <div class="screen">
-            <div class="screen-content">
-              <div class="game-art">🥤</div>
-              <div class="game-desc">穴に落とせ！<br>それだけ。</div>
-            </div>
-            <div class="screen-ticker">
-              <span>★ COLA DROP GAME ★ NO SKILL REQUIRED ★ MAYBE ★ COLA DROP ★</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 継ぎ目 -->
-      <div class="cab-seam"></div>
-
-      <!-- 操作パネル -->
-      <div class="cab-panel">
-        <!-- コイン口エリア -->
-        <div class="panel-top">
-          <div class="coin-unit">
-            <div class="coin-slot-housing">
-              <div class="coin-slot"></div>
-              <div class="coin-slot"></div>
-            </div>
-            <div class="coin-label">INSERT COIN</div>
-          </div>
-          <div class="led-group">
-            <div class="led on" style="background:#ff2d78; box-shadow:0 0 6px #ff2d78;"></div>
-            <div class="led" style="background:#442233;"></div>
-            <div class="led on" style="background:#ff2d78; box-shadow:0 0 6px #ff2d78; animation-delay:0.9s;"></div>
-          </div>
-        </div>
-
-        <!-- コントロールエリア -->
-        <div class="panel-controls">
-          <!-- ジョイスティック -->
-          <div class="joystick-wrap">
-            <div class="joystick-gate"></div>
-            <div class="joystick-stick"></div>
-            <div class="joystick-ball"></div>
-          </div>
-
-          <!-- STARTボタン -->
-          <div class="btn-start-wrap">
-            <button class="btn-start"
-              onclick="event.stopPropagation();goToGame(this.closest('.cabinet'),'https://example.com/cola-game')">
-              ▶ START
-            </button>
-            <div class="btn-label">PLAYER 1</div>
-          </div>
-
-          <!-- サブボタン -->
-          <div class="sub-buttons">
-            <div class="sub-btn-row">
-              <div class="sub-btn" style="background:radial-gradient(circle at 35% 30%,#ff6699,#cc0044);"></div>
-              <div class="sub-btn" style="background:radial-gradient(circle at 35% 30%,#aa88ff,#552299);"></div>
-            </div>
-            <div class="sub-btn-label">SELECT</div>
-          </div>
-        </div>
-
-        <!-- スピーカー -->
-        <div class="speaker-grill">
-          <div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div>
-          <div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div>
-          <div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div>
-        </div>
-      </div>
-
-    </div><!-- /cab-shell -->
-
-    <div class="cab-feet">
-      <div class="cab-foot"></div>
-      <div class="cab-foot"></div>
-    </div>
-  </div><!-- /cabinet 1 -->
-
-
-  <!-- ====================================================
-       筐体 NO.002 — 止まれゲーム (シアン)
-       ==================================================== -->
-  <div class="cabinet cab-cyan" onclick="goToGame(this,'https://example.com/stop-game')">
-
-    <div class="cab-topper">
-      <div class="cab-num">NO.002</div>
-      <div class="cab-title">止まれ<br>ゲーム</div>
-    </div>
-
-    <div class="cab-shell">
-      <div class="cab-top-trim">
-        <div class="trim-rivet"></div>
-        <div class="trim-stripe"></div>
-        <div class="trim-rivet"></div>
-      </div>
-
-      <div class="cab-screen-zone">
-        <div class="screen-bezel">
-          <div class="screw screw-tl"></div>
-          <div class="screw screw-tr"></div>
-          <div class="screw screw-bl"></div>
-          <div class="screw screw-br"></div>
-          <div class="screen">
-            <div class="screen-content">
-              <div class="game-art" style="animation-delay:-1.2s">🛑</div>
-              <div class="game-desc">止まれば<br>いいだけ。<br>なぜ止まれない。</div>
-            </div>
-            <div class="screen-ticker">
-              <span>★ STOP GAME ★ CAN YOU STOP? ★ PROBABLY NOT ★ STOP GAME ★</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="cab-seam"></div>
-
-      <div class="cab-panel">
-        <div class="panel-top">
-          <div class="coin-unit">
-            <div class="coin-slot-housing">
-              <div class="coin-slot"></div>
-              <div class="coin-slot"></div>
-            </div>
-            <div class="coin-label">INSERT COIN</div>
-          </div>
-          <div class="led-group">
-            <div class="led on" style="background:#00f5ff; box-shadow:0 0 6px #00f5ff;"></div>
-            <div class="led" style="background:#003344;"></div>
-            <div class="led on" style="background:#00f5ff; box-shadow:0 0 6px #00f5ff; animation-delay:0.7s;"></div>
-          </div>
-        </div>
-
-        <div class="panel-controls">
-          <div class="joystick-wrap">
-            <div class="joystick-gate"></div>
-            <div class="joystick-stick"></div>
-            <div class="joystick-ball"></div>
-          </div>
-          <div class="btn-start-wrap">
-            <button class="btn-start"
-              onclick="event.stopPropagation();goToGame(this.closest('.cabinet'),'https://example.com/stop-game')">
-              ▶ START
-            </button>
-            <div class="btn-label">PLAYER 1</div>
-          </div>
-          <div class="sub-buttons">
-            <div class="sub-btn-row">
-              <div class="sub-btn" style="background:radial-gradient(circle at 35% 30%,#00eeff,#006677);"></div>
-              <div class="sub-btn" style="background:radial-gradient(circle at 35% 30%,#ffee44,#aa8800);"></div>
-            </div>
-            <div class="sub-btn-label">SELECT</div>
-          </div>
-        </div>
-
-        <div class="speaker-grill">
-          <div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div>
-          <div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div>
-          <div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="cab-feet">
-      <div class="cab-foot"></div>
-      <div class="cab-foot"></div>
-    </div>
-  </div><!-- /cabinet 2 -->
-
-
-  <!-- ====================================================
-       筐体 NO.003 — 肉球タップゲーム (グリーン)
-       ==================================================== -->
-  <div class="cabinet cab-green" onclick="goToGame(this,'https://example.com/paw-game')">
-
-    <div class="cab-topper">
-      <div class="cab-num">NO.003</div>
-      <div class="cab-title">肉球タップ<br>ゲーム</div>
-    </div>
-
-    <div class="cab-shell">
-      <div class="cab-top-trim">
-        <div class="trim-rivet"></div>
-        <div class="trim-stripe"></div>
-        <div class="trim-rivet"></div>
-      </div>
-
-      <div class="cab-screen-zone">
-        <div class="screen-bezel">
-          <div class="screw screw-tl"></div>
-          <div class="screw screw-tr"></div>
-          <div class="screw screw-bl"></div>
-          <div class="screw screw-br"></div>
-          <div class="screen">
-            <div class="screen-content">
-              <div class="game-art" style="animation-delay:-2.1s">🐾</div>
-              <div class="game-desc">ひたすら<br>タップ。<br>以上。</div>
-            </div>
-            <div class="screen-ticker">
-              <span>★ PAW TAP GAME ★ TAP TAP TAP ★ TAP MORE ★ PAW TAP ★</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="cab-seam"></div>
-
-      <div class="cab-panel">
-        <div class="panel-top">
-          <div class="coin-unit">
-            <div class="coin-slot-housing">
-              <div class="coin-slot"></div>
-              <div class="coin-slot"></div>
-            </div>
-            <div class="coin-label">INSERT COIN</div>
-          </div>
-          <div class="led-group">
-            <div class="led on" style="background:#39ff14; box-shadow:0 0 6px #39ff14;"></div>
-            <div class="led" style="background:#113300;"></div>
-            <div class="led on" style="background:#39ff14; box-shadow:0 0 6px #39ff14; animation-delay:1.1s;"></div>
-          </div>
-        </div>
-
-        <div class="panel-controls">
-          <div class="joystick-wrap">
-            <div class="joystick-gate"></div>
-            <div class="joystick-stick"></div>
-            <div class="joystick-ball"></div>
-          </div>
-          <div class="btn-start-wrap">
-            <button class="btn-start"
-              onclick="event.stopPropagation();goToGame(this.closest('.cabinet'),'https://example.com/paw-game')">
-              ▶ START
-            </button>
-            <div class="btn-label">PLAYER 1</div>
-          </div>
-          <div class="sub-buttons">
-            <div class="sub-btn-row">
-              <div class="sub-btn" style="background:radial-gradient(circle at 35% 30%,#66ff33,#226600);"></div>
-              <div class="sub-btn" style="background:radial-gradient(circle at 35% 30%,#ff6644,#aa2200);"></div>
-            </div>
-            <div class="sub-btn-label">SELECT</div>
-          </div>
-        </div>
-
-        <div class="speaker-grill">
-          <div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div>
-          <div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div>
-          <div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="cab-feet">
-      <div class="cab-foot"></div>
-      <div class="cab-foot"></div>
-    </div>
-  </div><!-- /cabinet 3 -->
-
-
-  <!--
-  ======================================================
-  筐体追加テンプレート
-  クラス: cab-pink / cab-cyan / cab-green から選択
-  LEDとサブボタンの色だけ好みで変更する
-
-  <div class="cabinet cab-pink" onclick="goToGame(this,'https://your-url.com')">
-    <div class="cab-topper">
-      <div class="cab-num">NO.004</div>
-      <div class="cab-title">ゲーム名</div>
-    </div>
-    <div class="cab-shell">
-      <div class="cab-top-trim">
-        <div class="trim-rivet"></div><div class="trim-stripe"></div><div class="trim-rivet"></div>
-      </div>
-      <div class="cab-screen-zone">
-        <div class="screen-bezel">
-          <div class="screw screw-tl"></div><div class="screw screw-tr"></div>
-          <div class="screw screw-bl"></div><div class="screw screw-br"></div>
-          <div class="screen">
-            <div class="screen-content">
-              <div class="game-art">🎮</div>
-              <div class="game-desc">説明文</div>
-            </div>
-            <div class="screen-ticker"><span>★ GAME NAME ★ SCROLL TEXT ★</span></div>
-          </div>
-        </div>
-      </div>
-      <div class="cab-seam"></div>
-      <div class="cab-panel">
-        <div class="panel-top">
-          <div class="coin-unit">
-            <div class="coin-slot-housing"><div class="coin-slot"></div><div class="coin-slot"></div></div>
-            <div class="coin-label">INSERT COIN</div>
-          </div>
-          <div class="led-group">
-            <div class="led on" style="background:#ff2d78;box-shadow:0 0 6px #ff2d78;"></div>
-            <div class="led" style="background:#442233;"></div>
-            <div class="led on" style="background:#ff2d78;box-shadow:0 0 6px #ff2d78;animation-delay:.9s;"></div>
-          </div>
-        </div>
-        <div class="panel-controls">
-          <div class="joystick-wrap">
-            <div class="joystick-gate"></div><div class="joystick-stick"></div><div class="joystick-ball"></div>
-          </div>
-          <div class="btn-start-wrap">
-            <button class="btn-start" onclick="event.stopPropagation();goToGame(this.closest('.cabinet'),'https://your-url.com')">▶ START</button>
-            <div class="btn-label">PLAYER 1</div>
-          </div>
-          <div class="sub-buttons">
-            <div class="sub-btn-row">
-              <div class="sub-btn" style="background:radial-gradient(circle at 35% 30%,#ff6699,#cc0044);"></div>
-              <div class="sub-btn" style="background:radial-gradient(circle at 35% 30%,#aa88ff,#552299);"></div>
-            </div>
-            <div class="sub-btn-label">SELECT</div>
-          </div>
-        </div>
-        <div class="speaker-grill">
-          <div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div>
-          <div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div>
-          <div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div><div class="sp-hole"></div>
-        </div>
-      </div>
-    </div>
-    <div class="cab-feet"><div class="cab-foot"></div><div class="cab-foot"></div></div>
-  </div>
-  -->
-
-</main>
+<div class="shelf-container" id="shelfContainer"></div>
 
 <footer>
-  &copy; KUSO-GAME CENTER &nbsp;·&nbsp; ALL RIGHTS REFUSED &nbsp;·&nbsp; NO REFUNDS
+  <div class="footer-text">▓▓▒▒░░ MORE GAMES COMING SOON ░░▒▒▓▓</div>
 </footer>
 
+<div class="launch-overlay" id="launchOverlay">
+  <div class="launch-box">
+    <div class="launch-title" style="color:#888">BOOTING</div>
+    <div class="launch-game-name" id="launchGameName">GAME TITLE</div>
+    <div class="launch-bar-wrap">
+      <div class="launch-bar" id="launchBar"></div>
+    </div>
+    <div class="launch-status" id="launchStatus">LOADING...</div>
+    <div class="launch-close" onclick="closeLaunch()">[ TAP TO DISMISS ]</div>
+  </div>
+</div>
+
 <script>
-function goToGame(cabinetEl, url) {
-  cabinetEl.classList.add('flash');
-  setTimeout(() => {
-    cabinetEl.classList.remove('flash');
-    // 本番: window.location.href = url;
-    alert('▶ GAME START!\n\n' + url + '\n\nここに遷移します');
-  }, 250);
+// ─── GAME DATABASE ───────────────────────────────────────────
+const GAMES = [
+  {
+    id: 'space-blaster',
+    title: 'SPACE\nBLASTR',
+    stars: 4,
+    rare: false,
+    accentColor: '#00fff5',
+    deviceType: 'gameboy',
+    bodyClass: 'gb-body',
+    btnColors: ['#ff006e','#e000a0'],
+    screenFn: drawSpaceBlaster,
+    launchColor: '#00fff5',
+    description: 'SPACE SHOOTER'
+  },
+  {
+    id: 'egg-watch',
+    title: 'EGG\nWATCH',
+    stars: 3,
+    rare: false,
+    accentColor: '#ffe600',
+    deviceType: 'gw',
+    bodyClass: 'gw-body',
+    screenFn: drawEggWatch,
+    launchColor: '#ffe600',
+    description: 'EGG & WATCH'
+  },
+  {
+    id: 'invader-X',
+    title: 'INVADER\nDELUXE',
+    stars: 5,
+    rare: true,
+    accentColor: '#ff006e',
+    deviceType: 'invader',
+    bodyClass: 'inv-body',
+    screenFn: drawInvader,
+    launchColor: '#ff006e',
+    description: 'SPACE INVADERS'
+  },
+  {
+    id: 'brick-tower',
+    title: 'BRICK\nTOWER',
+    stars: 4,
+    rare: false,
+    accentColor: '#39ff14',
+    deviceType: 'brick',
+    bodyClass: 'bk-body',
+    screenFn: drawBrick,
+    launchColor: '#39ff14',
+    description: 'BLOCK PUZZLE'
+  },
+  {
+    id: 'pocket-racer',
+    title: 'POCKET\nRACER',
+    stars: 3,
+    rare: false,
+    accentColor: '#ff6b00',
+    deviceType: 'racer',
+    bodyClass: 'pr-body',
+    btnColors: ['#ff6b00','#ffaa00'],
+    screenFn: drawRacer,
+    launchColor: '#ff6b00',
+    description: 'RACING GAME'
+  },
+  {
+    id: 'neon-snake',
+    title: 'NEON\nSNAKE',
+    stars: 4,
+    rare: false,
+    accentColor: '#bf5fff',
+    deviceType: 'neon',
+    bodyClass: 'nr-body',
+    screenFn: drawSnake,
+    launchColor: '#bf5fff',
+    description: 'SNAKE DELUXE'
+  },
+];
+
+// ─── CANVAS DRAWING FUNCTIONS ─────────────────────────────────
+
+function drawSpaceBlaster(ctx, w, h, t) {
+  ctx.fillStyle = '#020210';
+  ctx.fillRect(0, 0, w, h);
+  // stars
+  const stars = [[2,3],[8,1],[14,5],[4,8],[11,2],[7,6],[1,9],[13,4],[9,9],[5,4]];
+  stars.forEach(([x,y]) => {
+    ctx.fillStyle = `rgba(255,255,255,${0.4+0.6*Math.abs(Math.sin(t*0.03+x))})`;
+    ctx.fillRect(x, y, 1, 1);
+  });
+  // aliens row
+  const aliens = [[2,4],[5,4],[8,4],[11,4]];
+  const offset = Math.sin(t*0.05)*2|0;
+  aliens.forEach(([x,y], i) => {
+    const alive = (t % 240 > i*30);
+    if (!alive) return;
+    ctx.fillStyle = '#00fff5';
+    ctx.fillRect(x+offset,y,3,2);
+    ctx.fillRect(x+1+offset,y+2,1,1);
+    if(t%60 < 30) { ctx.fillRect(x+offset,y+3,1,1); ctx.fillRect(x+2+offset,y+3,1,1); }
+  });
+  // player
+  const px = 6 + Math.sin(t*0.04)*4|0;
+  ctx.fillStyle = '#ff006e';
+  ctx.fillRect(px, h-4, 3, 1);
+  ctx.fillRect(px+1, h-5, 1, 1);
+  // bullet
+  if (t%90 < 45) {
+    ctx.fillStyle = '#ffe600';
+    const by = h-6 - (t%90)*0.15|0;
+    if (by > 2) ctx.fillRect(px+1, by, 1, 2);
+  }
+  // score
+  ctx.fillStyle = '#00fff5';
+  ctx.font = '2px "Press Start 2P"';
+  ctx.fillText('1200', 1, 3);
 }
+
+function drawEggWatch(ctx, w, h, t) {
+  ctx.fillStyle = '#021802';
+  ctx.fillRect(0, 0, w, h);
+  // LCD grid
+  const frame = Math.floor(t/20)%4;
+  // egg character
+  ctx.fillStyle = '#39ff14';
+  const chars = [
+    [[5,3],[6,3],[5,4],[6,4],[5,5],[6,5]],
+    [[4,3],[5,3],[6,3],[4,4],[6,4],[4,5],[5,5],[6,5]],
+  ];
+  const ch = chars[frame%2];
+  ch.forEach(([x,y])=>ctx.fillRect(x,y,1,1));
+  // score
+  ctx.fillStyle = '#39ff14';
+  ctx.font = '2px monospace';
+  ctx.fillText('99', 1, 3);
+  ctx.fillText('LIFE:3', 1, h-2);
+}
+
+function drawInvader(ctx, w, h, t) {
+  ctx.fillStyle = '#000008';
+  ctx.fillRect(0, 0, w, h);
+  // invader sprite (pixel art)
+  const frame = Math.floor(t/15)%2;
+  ctx.fillStyle = '#ff006e';
+  const inv = frame===0
+    ? [[1,1],[3,1],[0,2],[1,2],[2,2],[3,2],[4,2],[0,3],[2,3],[4,3],[1,4],[3,4]]
+    : [[1,1],[3,1],[0,2],[1,2],[2,2],[3,2],[4,2],[1,3],[3,3],[0,4],[4,4]];
+  const ox = 5, oy = 1;
+  inv.forEach(([x,y])=>ctx.fillRect(ox+x, oy+y, 1, 1));
+  // scanlines
+  for(let i=0;i<h;i+=4){ctx.fillStyle='rgba(0,0,0,0.2)';ctx.fillRect(0,i,w,1);}
+  // score
+  ctx.fillStyle='#ff006e'; ctx.font='2px monospace';
+  ctx.fillText('SCORE', 1, 3);
+  ctx.fillText(String(Math.floor(t*7)%9999).padStart(4,'0'), 1, 6);
+  // bullets
+  for(let b=0;b<3;b++){
+    const bx=2+b*4, by=h-3-(t*0.3+b*7)%((h-4));
+    ctx.fillStyle='#ffe600';
+    ctx.fillRect(bx|0, by|0, 1, 2);
+  }
+}
+
+function drawBrick(ctx, w, h, t) {
+  ctx.fillStyle = '#0a1a0a';
+  ctx.fillRect(0, 0, w, h);
+  ctx.fillStyle = '#39ff14';
+  // grid 8x12
+  const grid = [];
+  for(let r=0;r<5;r++) for(let c=0;c<6;c++) {
+    if((r+c+Math.floor(t/60))%3!==0) {
+      ctx.fillRect(1+c*2,1+r*2,1,1);
+    }
+  }
+  // falling piece (L-shape)
+  const py = (t*0.08)%12|0;
+  const piece = [[0,0],[0,1],[0,2],[1,2]];
+  ctx.fillStyle='#ffe600';
+  piece.forEach(([x,y])=>ctx.fillRect(8+x,py+y,1,1));
+  // score
+  ctx.fillStyle='#39ff14'; ctx.font='2px monospace';
+  ctx.fillText(String(t*3%9999|0).padStart(4,'0'),1,h-2);
+}
+
+function drawRacer(ctx, w, h, t) {
+  ctx.fillStyle = '#100010';
+  ctx.fillRect(0, 0, w, h);
+  // road
+  ctx.fillStyle = '#222';
+  ctx.fillRect(w/2-5, 0, 10, h);
+  // center line
+  ctx.fillStyle = '#ffe600';
+  for(let y=0;y<h;y+=6){
+    const dy=(y+t*0.5)%h;
+    ctx.fillRect(w/2-0.5, dy, 1, 3);
+  }
+  // player car
+  ctx.fillStyle = '#ff6b00';
+  ctx.fillRect(w/2-2, h-6, 4, 3);
+  ctx.fillStyle = '#ffaa00';
+  ctx.fillRect(w/2-1, h-8, 2, 2);
+  // enemy car
+  const ex = w/2 + Math.sin(t*0.04)*3|0;
+  const ey = (t*0.3)%(h+6);
+  ctx.fillStyle = '#00fff5';
+  ctx.fillRect(ex-2, ey-4, 4, 3);
+  // speed lines
+  ctx.fillStyle='rgba(255,100,0,0.4)';
+  for(let i=0;i<3;i++){
+    const lx = 2+i*6;
+    ctx.fillRect(lx, (t*0.4+i*20)%h|0, 1, 4);
+  }
+}
+
+function drawSnake(ctx, w, h, t) {
+  ctx.fillStyle = '#050010';
+  ctx.fillRect(0, 0, w, h);
+  // neon grid
+  ctx.strokeStyle = 'rgba(191,95,255,0.15)';
+  ctx.lineWidth = 0.3;
+  for(let x=0;x<w;x+=3){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();}
+  for(let y=0;y<h;y+=3){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
+  // snake
+  const snakeLen = 8;
+  const speed = 0.06;
+  const snake = [];
+  for(let i=0;i<snakeLen;i++){
+    const a = t*speed - i*0.4;
+    snake.push({
+      x: w/2 + Math.cos(a)*5 + Math.sin(a*0.7)*3,
+      y: h/2 + Math.sin(a)*4 + Math.cos(a*0.5)*2,
+    });
+  }
+  snake.forEach((s,i)=>{
+    const alpha = 1 - i/snakeLen;
+    ctx.fillStyle = `rgba(191,95,255,${alpha})`;
+    ctx.shadowBlur = 4; ctx.shadowColor='#bf5fff';
+    ctx.fillRect(s.x|0, s.y|0, 2, 2);
+    ctx.shadowBlur = 0;
+  });
+  // food
+  const fx = 3 + ((t*7)%3|0)*4;
+  const fy = 3 + ((t*3)%4|0)*3;
+  ctx.fillStyle = '#ffe600';
+  ctx.shadowBlur = 6; ctx.shadowColor='#ffe600';
+  ctx.fillRect(fx, fy, 2, 2);
+  ctx.shadowBlur = 0;
+}
+
+// ─── BUILD DEVICE HTML ─────────────────────────────────────────
+
+function buildDevice(game, canvasId) {
+  const stars = '★'.repeat(game.stars) + '☆'.repeat(5-game.stars);
+  const starsColor = game.accentColor;
+
+  let inner = '';
+  let controls = '';
+
+  if (game.deviceType === 'gameboy') {
+    const [b1,b2] = game.btnColors||['#ff006e','#e000a0'];
+    controls = `
+      <div class="gb-controls">
+        <div class="gb-dpad"></div>
+        <div class="gb-buttons">
+          <div class="gb-btn" style="background:${b2}"></div>
+          <div class="gb-btn" style="background:${b1}"></div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:center;margin-top:3px">
+        <div class="gb-speaker"><span></span><span></span><span></span></div>
+      </div>`;
+    inner = `<div class="${game.bodyClass}">
+      <div class="gb-brand">${game.id.toUpperCase()}</div>
+      <div class="gb-screen-bezel">
+        <canvas class="mini-screen" id="${canvasId}"></canvas>
+      </div>
+      ${controls}
+    </div>`;
+  } else if (game.deviceType === 'gw') {
+    const t = new Date();
+    const hh = String(t.getHours()).padStart(2,'0');
+    const mm = String(t.getMinutes()).padStart(2,'0');
+    controls = `<div class="gw-controls">
+      <div class="gw-btn"></div><div class="gw-btn"></div><div class="gw-btn"></div>
+    </div>`;
+    inner = `<div class="${game.bodyClass}">
+      <div class="gw-top">
+        <div class="gw-screen-bezel" style="flex:1">
+          <canvas class="mini-screen" id="${canvasId}"></canvas>
+        </div>
+        <div class="gw-time">
+          <div class="gw-time-digit">${hh}</div>
+          <div class="gw-time-digit" style="color:#005">:</div>
+          <div class="gw-time-digit">${mm}</div>
+        </div>
+      </div>
+      ${controls}
+    </div>`;
+  } else if (game.deviceType === 'invader') {
+    inner = `<div class="${game.bodyClass}">
+      <div class="inv-screen-bezel">
+        <canvas class="mini-screen" id="${canvasId}"></canvas>
+      </div>
+      <div class="inv-controls">
+        <div class="inv-joy"></div>
+        <div class="inv-coin">INSERT<br>COIN</div>
+        <div class="inv-fire"></div>
+      </div>
+    </div>`;
+  } else if (game.deviceType === 'brick') {
+    inner = `<div class="${game.bodyClass}">
+      <div class="bk-screen-bezel">
+        <canvas class="mini-screen" id="${canvasId}"></canvas>
+      </div>
+      <div class="bk-controls">
+        <div class="bk-btn"></div><div class="bk-btn"></div>
+        <div class="bk-btn"></div><div class="bk-btn"></div>
+      </div>
+    </div>`;
+  } else if (game.deviceType === 'racer') {
+    const [b1,b2] = game.btnColors||['#ff6b00','#ffaa00'];
+    inner = `<div class="${game.bodyClass}">
+      <div class="pr-screen-bezel">
+        <canvas class="mini-screen" id="${canvasId}"></canvas>
+      </div>
+      <div class="pr-controls">
+        <div class="pr-btn" style="background:${b1}"></div>
+        <div class="pr-btn" style="background:${b2}"></div>
+      </div>
+    </div>`;
+  } else if (game.deviceType === 'neon') {
+    inner = `<div class="${game.bodyClass}">
+      <div class="nr-screen-bezel">
+        <canvas class="mini-screen" id="${canvasId}"></canvas>
+      </div>
+      <div class="nr-controls">
+        <div class="nr-stick"></div>
+        <div class="nr-fire"></div>
+      </div>
+    </div>`;
+  }
+
+  return `
+    <div class="device-card${game.rare?' rare':''}" data-game="${game.id}" onclick="launchGame('${game.id}')">
+      <div class="device-body">${inner}</div>
+      <div class="device-info">
+        <div class="device-title">${game.title.replace('\n','<br>')}</div>
+        <div class="device-stars" style="color:${starsColor};text-shadow:0 0 6px ${starsColor}">${stars}</div>
+        <div class="device-play">▶ PLAY</div>
+      </div>
+    </div>`;
+}
+
+// ─── RENDER SHELF ─────────────────────────────────────────────
+
+function renderShelf() {
+  const container = document.getElementById('shelfContainer');
+  const perRow = 3;
+  const rows = [];
+  for (let i=0; i<GAMES.length; i+=perRow) rows.push(GAMES.slice(i,i+perRow));
+
+  rows.forEach((row, ri) => {
+    const rowEl = document.createElement('div');
+    rowEl.className = 'shelf-row';
+    const itemsEl = document.createElement('div');
+    itemsEl.className = 'shelf-items';
+    row.forEach((game,ci) => {
+      const canvasId = `canvas_${game.id}`;
+      itemsEl.innerHTML += buildDevice(game, canvasId);
+    });
+    rowEl.appendChild(itemsEl);
+    const board = document.createElement('div');
+    board.className = 'shelf-board';
+    rowEl.appendChild(board);
+    container.appendChild(rowEl);
+  });
+
+  // Animate cards in
+  document.querySelectorAll('.device-card').forEach((el,i) => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    setTimeout(()=>{
+      el.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+      el.style.opacity = '1';
+      el.style.transform = 'translateY(0)';
+    }, 100 + i*80);
+  });
+}
+
+// ─── CANVAS ANIMATION LOOP ────────────────────────────────────
+
+let animT = 0;
+const canvasFns = {};
+
+function initCanvases() {
+  GAMES.forEach(game => {
+    const canvas = document.getElementById(`canvas_${game.id}`);
+    if (!canvas) return;
+    const parent = canvas.parentElement;
+    const pw = parent.clientWidth;
+    const ph = parent.clientHeight;
+    canvas.width = 16;
+    canvas.height = 12;
+    canvas.style.width = pw + 'px';
+    canvas.style.height = ph + 'px';
+    canvasFns[game.id] = { canvas, fn: game.screenFn };
+  });
+}
+
+function animLoop() {
+  animT++;
+  Object.values(canvasFns).forEach(({ canvas, fn }) => {
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    fn(ctx, canvas.width, canvas.height, animT);
+  });
+  requestAnimationFrame(animLoop);
+}
+
+// ─── AUDIO (WebAudio) ─────────────────────────────────────────
+
+let audioCtx = null;
+
+function ensureAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+}
+
+function beepOn(freq=880, dur=0.08, type='square', vol=0.12) {
+  ensureAudio();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.type = type;
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+  osc.start();
+  osc.stop(audioCtx.currentTime + dur);
+}
+
+function playBootSound() {
+  beepOn(440, 0.06, 'square', 0.1);
+  setTimeout(()=>beepOn(660, 0.06, 'square', 0.1), 80);
+  setTimeout(()=>beepOn(880, 0.12, 'square', 0.15), 160);
+}
+
+// ─── LAUNCH GAME ──────────────────────────────────────────────
+
+let launchTimeout = null;
+
+function launchGame(gameId) {
+  playBootSound();
+  const game = GAMES.find(g=>g.id===gameId);
+  if (!game) return;
+
+  const overlay = document.getElementById('launchOverlay');
+  const nameEl = document.getElementById('launchGameName');
+  const barEl = document.getElementById('launchBar');
+  const statusEl = document.getElementById('launchStatus');
+
+  nameEl.textContent = game.title.replace('\n',' ');
+  nameEl.style.color = game.launchColor;
+  nameEl.style.textShadow = `0 0 10px ${game.launchColor}, 0 0 30px ${game.launchColor}`;
+  barEl.style.background = `linear-gradient(90deg, ${game.launchColor}, #fff)`;
+  barEl.style.boxShadow = `0 0 8px ${game.launchColor}`;
+  barEl.style.width = '0%';
+  statusEl.textContent = 'LOADING...';
+  overlay.classList.add('active');
+
+  const msgs = ['CHECKING ROM...','LOADING ASSETS...','INITIALIZING...','READY!'];
+  let mi = 0;
+  const interval = setInterval(()=>{
+    if (mi < msgs.length) statusEl.textContent = msgs[mi++];
+  }, 220);
+
+  setTimeout(()=>{barEl.style.width='100%';},50);
+  setTimeout(()=>{
+    clearInterval(interval);
+    statusEl.textContent = 'GAME START!';
+    beepOn(220, 0.04, 'square', 0.08);
+    setTimeout(()=>beepOn(440, 0.04, 'square', 0.08), 60);
+    setTimeout(()=>beepOn(880, 0.15, 'square', 0.12), 120);
+  }, 900);
+
+  launchTimeout = setTimeout(()=>{closeLaunch();}, 4000);
+}
+
+function closeLaunch() {
+  clearTimeout(launchTimeout);
+  document.getElementById('launchOverlay').classList.remove('active');
+  document.getElementById('launchBar').style.width = '0%';
+}
+
+// ─── INIT ─────────────────────────────────────────────────────
+
+renderShelf();
+setTimeout(()=>{
+  initCanvases();
+  animLoop();
+}, 200);
 </script>
 </body>
 </html>
-yasudashinya@yasudashinyanoMacBook-Air ~ % 
