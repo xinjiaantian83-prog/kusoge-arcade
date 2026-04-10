@@ -719,7 +719,7 @@ footer {
   filter:brightness(1.5) saturate(1.3);
   transition:filter 0.12s;
 }
-   /* ===== 擬似3D配置 ===== */
+  /* ===== 擬似3D配置（弱め版） ===== */
 .arcade-floor .cabinet:nth-child(1) {
   top: 40px;
   transform: translateX(-50%) scale(1);
@@ -727,16 +727,16 @@ footer {
 }
 
 .arcade-floor .cabinet:nth-child(2) {
-  top: 370px;
-  transform: translateX(-78%) scale(0.82) rotate(-7deg);
-  opacity: 0.78;
+  top: 300px;
+  transform: translateX(-68%) scale(0.72) rotate(-4deg);
+  opacity: 0.42;
   z-index: 2;
 }
 
 .arcade-floor .cabinet:nth-child(3) {
-  top: 390px;
-  transform: translateX(-20%) scale(0.82) rotate(7deg);
-  opacity: 0.78;
+  top: 300px;
+  transform: translateX(-32%) scale(0.72) rotate(4deg);
+  opacity: 0.42;
   z-index: 1;
 }
    .arcade-floor::before {
@@ -762,7 +762,7 @@ footer {
 }
    @media (max-width: 480px) {
   .arcade-floor {
-    min-height: 900px;
+    min-height: 820px;
   }
 
   .cabinet {
@@ -771,16 +771,19 @@ footer {
 
   .arcade-floor .cabinet:nth-child(1) {
     top: 30px;
+    transform: translateX(-50%) scale(1);
   }
 
   .arcade-floor .cabinet:nth-child(2) {
-    top: 330px;
-    transform: translateX(-82%) scale(0.76) rotate(-7deg);
+    top: 250px;
+    transform: translateX(-66%) scale(0.66) rotate(-4deg);
+    opacity: 0.36;
   }
 
   .arcade-floor .cabinet:nth-child(3) {
-    top: 350px;
-    transform: translateX(-18%) scale(0.76) rotate(7deg);
+    top: 250px;
+    transform: translateX(-34%) scale(0.66) rotate(4deg);
+    opacity: 0.36;
   }
 }
 </style>
