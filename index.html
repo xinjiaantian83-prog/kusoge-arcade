@@ -656,6 +656,7 @@ const GAMES = [
     screenFn: drawRacer,
     launchColor: '#ff6b00',
     description: 'RACING GAME'
+      url: 'https://xinjiaantian83-prog.github.io/my-map/pitfall_test.html'
   },
   {
     id: 'neon-snake',
@@ -1076,7 +1077,13 @@ function launchGame(gameId) {
     setTimeout(()=>beepOn(880, 0.15, 'square', 0.12), 120);
   }, 900);
 
-  launchTimeout = setTimeout(()=>{closeLaunch();}, 4000);
+  launchTimeout = setTimeout(()=>{
+  if (game.url) {
+    window.location.href = game.url;
+    return;
+  }
+  closeLaunch();
+}, 1400);
 }
 
 function closeLaunch() {
