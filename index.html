@@ -789,20 +789,6 @@ function drawRacer(ctx, w, h, t) {
     const dy=(y+t*0.5)%h;
     ctx.fillRect(w/2-0.5, dy, 1, 3);
   }
-  function drawCola(ctx,w,h,t){
-  ctx.fillStyle='#200';
-  ctx.fillRect(0,0,w,h);
-
-  // コーラ缶っぽいブロック
-  ctx.fillStyle='#f00';
-  ctx.fillRect(6,3,4,6);
-  ctx.fillStyle='#fff';
-  ctx.fillRect(7,5,2,1);
-
-  // 泡
-  ctx.fillStyle='#fff';
-  ctx.fillRect(5+(t%3),2,1,1);
-}
   // player car
   ctx.fillStyle = '#ff6b00';
   ctx.fillRect(w/2-2, h-6, 4, 3);
@@ -820,7 +806,22 @@ function drawRacer(ctx, w, h, t) {
     ctx.fillRect(lx, (t*0.4+i*20)%h|0, 1, 4);
   }
 }
+function drawCola(ctx, w, h, t) {
+  ctx.fillStyle = '#200';
+  ctx.fillRect(0, 0, w, h);
 
+  // コーラ缶
+  ctx.fillStyle = '#f00';
+  ctx.fillRect(6, 3, 4, 6);
+
+  // ラベル
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(7, 5, 2, 1);
+
+  // 泡
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(5 + (t % 3), 2, 1, 1);
+}
 function drawSnake(ctx, w, h, t) {
   ctx.fillStyle = '#050010';
   ctx.fillRect(0, 0, w, h);
