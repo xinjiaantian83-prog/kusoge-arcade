@@ -1117,6 +1117,14 @@ function unlockArcadeBgm() {
   arcadeBgm.volume = 0.4;
   arcadeBgm.play().catch(()=>{});
 }
+  document.addEventListener('visibilitychange', () => {
+  if (!arcadeBgm) return;
+
+  if (document.hidden) {
+    arcadeBgm.pause();
+    arcadeBgm.currentTime = 0;
+  }
+});
   document.body.addEventListener('touchstart', unlockArcadeBgm, { once:true });
 document.body.addEventListener('click', unlockArcadeBgm, { once:true });
 renderShelf();
