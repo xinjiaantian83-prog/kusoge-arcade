@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DARUMA-SAN GA KORONDA</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; image-rendering: pixelated; }
+  html, body { background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; font-family: monospace; }
+  #gameCanvas { display: block; width: min(600px, 100vw); height: auto; cursor: none; border: 2px solid #220000; }
+  #ui { width: min(600px, 100vw); background: #000; padding: 4px 8px; display: flex; justify-content: space-between; font-size: 11px; color: #aaa; border: 2px solid #220000; border-top: none; }
+  #footer { color: #333; font-size: 9px; margin-top: 6px; }
+</style>
+</head>
+<body>
+<canvas id="gameCanvas" width="300" height="200"></canvas>
+<div id="ui">
+  <span id="hud-dist">DISTANCE: 0</span>
+  <span id="hud-status">MOVE WHEN SHE HAMMERS</span>
+  <span id="hud-closest">BEST: 0</span>
+</div>
+<div id="footer">ARROW KEYS / WASD to move &nbsp;|&nbsp; HOLD to advance &nbsp;|&nbsp; SPACE to start</div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+
+const W = 300, H = 200;
+
+let state = 'title';
+let playerZ = 0;
+let playerMoving = false;
+let keys = {};
+let figureState = 'hammering';
+let hammerTimer = 0;
+let lookTimer = 0;
+let lookAngle = 0;
+let hammerFrame = 0;
+let breathPhase = 0;
+let winDist = 0;
+let bestDist = 0;
+let frameCount = 0;
+let flashTimer = 0;
+let flashColor = '#ff0000';
+let warningFlash = 0;
+let nextHammerDur = 0;
+let nextPauseDur = 0;
+let glitchLines = [];
+let catchMsg = '';
+let shakeX = 0, shakeY = 0;
+
+const CATCH_MSGS = [
+  "YOU DIED. (she saw your soul)",
+  "CAUGHT. try holding still next time.",
+  "GAME OVER. the doll felt you.",
+  "SHE TURNED. you blinked. bad.",
+  "DELETED FROM EXISTENCE."
+];
+
+function rand(a, b) { return a + Math.random() * (b - a); }
+function randi(a, b) { return Math.floor(rand(a, b + 1)); }
+
+function resetFigure() {
+  figureState = 'hammering';
+  hammerTimer = rand(1.5, 3.5);
+  nextHammerDur = hammerTimer;
+  nextPauseDur = rand(1.0, 2.5);
+  lookAngle = 0;
+  lookTimer = 0;
+  breathPhase = 0;
+}
+
+function startGame() {
+  state = 'playing';
+  playerZ = 0;
+  playerMoving = false;
+  frameCount = 0;
+  flashTimer = 0;
+  warningFlash = 0;
+  shakeX = 0; shakeY = 0;
+  glitchLines = [];
+  resetFigure();
+}
+
+function px(x, y, w, h, color) {
+  ctx.fillStyle = color;
+  ctx.fillRect(Math.floor(x), Math.floor(y), w, h);
+}
+
+function drawBG() {
+  px(0, 0, W, 80, '#000005');
+  px(0, 80, W, 40, '#05050f');
+  px(0, 120, W, 80, '#0a0a18');
+
+  px(220, 12, 16, 16, '#ddddf0');
+  px(222, 10, 12, 2, '#ddddf0');
+  px(220, 26, 16, 2, '#ddddf0');
+  px(218, 14, 2, 12, '#ddddf0');
+  px(234, 14, 2, 12, '#ddddf0');
+  px(224, 16, 2, 2, '#aaaacc');
+  px(229, 20, 3, 2, '#aaaacc');
+
+  const starPts = [[10,8],[45,15],[80,5],[130,12],[170,7],[195,18],[240,4],[265,11],[50,22],[100,19],[155,25],[200,9],[280,20]];
+  for (let [sx, sy] of starPts) {
+    const twinkle = Math.sin(frameCount * 0.05 + sx) > 0.7;
+    px(sx, sy, twinkle ? 2 : 1, twinkle ? 2 : 1, '#ccccee');
+  }
+
+  ctx.fillStyle = '#050510';
+  ctx.beginPath();
+  ctx.moveTo(0, 100);
+  ctx.lineTo(40, 72); ctx.lineTo(80, 85); ctx.lineTo(120, 60);
+  ctx.lineTo(160, 75); ctx.lineTo(200, 58); ctx.lineTo(240, 70);
+  ctx.lineTo(280, 65); ctx.lineTo(300, 80); ctx.lineTo(300, 100);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = '#1a1a2a';
+  ctx.beginPath();
+  ctx.moveTo(100, 200); ctx.lineTo(200, 200);
+  ctx.lineTo(165, 120); ctx.lineTo(135, 120);
+  ctx.closePath();
+  ctx.fill();
+
+  function lantern(x, y, scale) {
+    px(x - 1 * scale, y - 8 * scale, 2 * scale, 8 * scale, '#2a2a3a');
+    px(x - 3 * scale, y - 9 * scale, 6 * scale, 2 * scale, '#2a2a3a');
+    px(x - 2 * scale, y - 7 * scale, 4 * scale, 2 * scale, '#332200');
+    if (Math.sin(frameCount * 0.08 + x) > 0) px(x - 1 * scale, y - 6 * scale, 2 * scale, 2 * scale, '#553300');
+  }
+  lantern(105, 155, 1); lantern(195, 155, 1);
+  lantern(95, 165, 1);  lantern(205, 165, 1);
+  lantern(75, 178, 2);  lantern(225, 178, 2);
+
+  px(120, 105, 4, 18, '#8b0000'); px(176, 105, 4, 18, '#8b0000');
+  px(116, 103, 68, 5, '#8b0000'); px(120, 108, 60, 3, '#660000');
+
+  px(60, 145, 6, 30, '#6b0000');  px(234, 145, 6, 30, '#6b0000');
+  px(55, 140, 85, 8, '#6b0000');  px(63, 148, 74, 5, '#550000');
+
+  for (let i = 0; i < 5; i++) {
+    const fx = (i * 67 + frameCount * 0.2) % (W + 30) - 15;
+    const fy = 150 + i * 3;
+    ctx.globalAlpha = 0.12;
+    ctx.fillStyle = '#8888aa';
+    ctx.fillRect(fx, fy, 40, 6);
+    ctx.globalAlpha = 1;
+  }
+}
+
+function drawFigure(z) {
+  const proximity = z / 100;
+  const scale = Math.max(0.3, proximity * 1.5 + 0.2);
+  const fx = W / 2;
+  const fy = 118 - proximity * 20;
+  const s = scale;
+  const breath = Math.sin(breathPhase * 0.8) * (figureState === 'paused' ? 1.5 : 0.3);
+  const fc = '#ddddef';
+  const shadow = '#aaaacc';
+  const dark = '#555566';
+
+  px(fx - 4*s, fy - 12*s + breath, 8*s, 14*s, fc);
+  px(fx - 7*s, fy - 10*s + breath, 4*s, 5*s, shadow);
+  px(fx + 3*s, fy - 10*s + breath, 4*s, 5*s, shadow);
+
+  const headTilt = lookAngle * 8 * s;
+  px(fx - 3*s + headTilt, fy - 16*s + breath, 6*s, 6*s, fc);
+  px(fx - 3*s + headTilt, fy - 18*s + breath, 6*s, 2*s, dark);
+  px(fx - 4*s + headTilt, fy - 17*s + breath, 2*s, 4*s, dark);
+
+  if (lookAngle > 0.3 && proximity > 0.2) {
+    const eyeX = fx + headTilt;
+    const eyeY = fy - 14*s + breath;
+    px(eyeX - 1*s, eyeY, 1*s, 1*s, '#000');
+    px(eyeX + 1*s, eyeY, 1*s, 1*s, '#000');
+    if (proximity > 0.5) {
+      px(eyeX - 1*s, eyeY, 1*s, 1*s, '#ffffff');
+      px(eyeX + 1*s, eyeY, 1*s, 1*s, '#ffffff');
+    }
+  }
+
+  px(fx - 2*s, fy - 6*s + breath, 3*s, 6*s, '#887744');
+  px(fx - 1*s, fy - 8*s + breath, 2*s, 2*s, '#aa9966');
+  px(fx - 4*s, fy - 4*s + breath, 8*s, 1*s, '#665533');
+
+  if (figureState === 'hammering') {
+    const hammerSwing = Math.sin(hammerFrame * 0.4) * 8 * s;
+    px(fx + 4*s, fy - 8*s + hammerSwing + breath, 3*s, 2*s, '#332211');
+    px(fx + 6*s, fy - 10*s + hammerSwing + breath, 2*s, 4*s, '#443322');
+    if (Math.abs(Math.sin(hammerFrame * 0.4)) < 0.1) {
+      px(fx, fy - 5*s + breath, 1, 2*s, '#ccccff');
+    }
+  } else {
+    px(fx + 4*s, fy - 8*s + breath, 3*s, 2*s, '#332211');
+    px(fx + 4*s, fy - 10*s + breath, 2*s, 6*s, '#443322');
+    const shudder = Math.sin(breathPhase * 3) * 0.8 * s;
+    px(fx + 3*s, fy - 11*s + shudder + breath, 3*s, 2*s, shadow);
+    px(fx - 6*s, fy - 11*s - shudder + breath, 3*s, 2*s, shadow);
+  }
+
+  ctx.globalAlpha = 0.3;
+  ctx.fillStyle = '#000022';
+  ctx.beginPath();
+  ctx.ellipse(fx, fy + 2, 10*s, 3*s, 0, 0, Math.PI*2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+}
+
+function drawPlayer(z) {
+  const scale = 1 + z * 0.005;
+  const px_ = W / 2;
+  const py = H - 30;
+  const bob = playerMoving ? Math.sin(frameCount * 0.3) * 2 : 0;
+
+  ctx.globalAlpha = 0.4;
+  ctx.fillStyle = '#000';
+  ctx.beginPath();
+  ctx.ellipse(px_, py + 14, 8*scale, 3, 0, 0, Math.PI*2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  if (playerMoving) {
+    const legSwing = Math.sin(frameCount * 0.3) * 4;
+    ctx.fillStyle = legSwing > 0 ? '#443322' : '#553333'; ctx.fillRect(Math.floor(px_ - 4*scale), py + 2 + bob, Math.floor(3*scale), 8);
+    ctx.fillStyle = legSwing <= 0 ? '#443322' : '#553333'; ctx.fillRect(Math.floor(px_ + 1*scale), py + 2 + bob, Math.floor(3*scale), 8);
+  } else {
+    ctx.fillStyle = '#443322'; ctx.fillRect(Math.floor(px_ - 4*scale), py + 2, Math.floor(3*scale), 8);
+    ctx.fillStyle = '#443322'; ctx.fillRect(Math.floor(px_ + 1*scale), py + 2, Math.floor(3*scale), 8);
+  }
+  ctx.fillStyle = '#334455'; ctx.fillRect(Math.floor(px_ - 4*scale), py - 6 + bob, Math.floor(8*scale), 9);
+  ctx.fillStyle = '#ccaa88'; ctx.fillRect(Math.floor(px_ - 3*scale), py - 14 + bob, Math.floor(6*scale), 8);
+  ctx.fillStyle = '#221100'; ctx.fillRect(Math.floor(px_ - 3*scale), py - 15 + bob, Math.floor(6*scale), 3);
+  ctx.fillStyle = '#000'; ctx.fillRect(Math.floor(px_ - 2*scale), py - 11 + bob, 1, 1);
+  ctx.fillStyle = '#000'; ctx.fillRect(Math.floor(px_ + 1*scale), py - 11 + bob, 1, 1);
+}
+
+function drawHUD(z) {
+  const dist = Math.floor(z);
+  const pct = dist / 100;
+
+  ctx.fillStyle = '#000a00'; ctx.fillRect(4, 4, 100, 8);
+  ctx.fillStyle = figureState === 'hammering' ? '#00aa00' : '#880000';
+  ctx.fillRect(4, 4, Math.floor(100 * pct), 8);
+  ctx.strokeStyle = '#336633'; ctx.lineWidth = 1; ctx.strokeRect(4, 4, 100, 8);
+  ctx.fillStyle = '#00ff44'; ctx.font = '6px monospace'; ctx.fillText('DIST', 6, 11);
+
+  const stateText = figureState === 'hammering' ? '>>> MOVE <<<' : '!!! STOP !!!';
+  const stateColor = figureState === 'hammering' ? '#00ff44' : '#ff4400';
+  ctx.fillStyle = stateColor; ctx.font = '6px monospace';
+  const tw = ctx.measureText(stateText).width;
+  ctx.fillText(stateText, W/2 - tw/2, 10);
+
+  if (warningFlash > 0) {
+    ctx.globalAlpha = Math.min(1, warningFlash) * 0.4;
+    ctx.fillStyle = '#ff0000'; ctx.fillRect(0, 0, W, H);
+    ctx.globalAlpha = 1;
+  }
+
+  document.getElementById('hud-dist').textContent = 'DISTANCE: ' + dist;
+  document.getElementById('hud-status').textContent = figureState === 'hammering' ? 'MOVE WHEN SHE HAMMERS' : 'STOP! SHE MIGHT LOOK!';
+  document.getElementById('hud-closest').textContent = 'BEST: ' + bestDist;
+}
+
+function drawTitle() {
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+  const flick = Math.sin(frameCount * 0.1) > 0.8;
+
+  ctx.fillStyle = '#330000';
+  ctx.fillRect(70, 60, 8, 80); ctx.fillRect(222, 60, 8, 80);
+  ctx.fillRect(60, 55, 180, 10); ctx.fillRect(75, 65, 150, 6);
+
+  ctx.fillStyle = '#ddddf0'; ctx.beginPath(); ctx.arc(150, 40, 20, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#000';    ctx.beginPath(); ctx.arc(158, 36, 18, 0, Math.PI*2); ctx.fill();
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = flick ? '#cc0000' : '#ff0000'; ctx.font = 'bold 14px monospace'; ctx.fillText('DARUMA-SAN', W/2, 120);
+  ctx.fillStyle = '#ffffff'; ctx.font = 'bold 10px monospace'; ctx.fillText('GA KORONDA', W/2, 133);
+  ctx.fillStyle = '#888899'; ctx.font = '7px monospace'; ctx.fillText('A HORROR SHRINE GAME', W/2, 148);
+  ctx.fillStyle = Math.sin(frameCount * 0.1) > 0 ? '#aaaaff' : '#666699';
+  ctx.font = '7px monospace'; ctx.fillText('PRESS SPACE OR CLICK TO START', W/2, 170);
+  ctx.fillStyle = '#444455'; ctx.font = '6px monospace';
+  ctx.fillText('HOLD ARROW/WASD TO MOVE WHEN SHE HAMMERS', W/2, 183);
+  ctx.fillText('STOP BEFORE SHE LOOKS BACK', W/2, 192);
+  ctx.textAlign = 'left';
+
+  ctx.globalAlpha = 0.3; drawFigure(30); ctx.globalAlpha = 1;
+}
+
+function drawGameOver() {
+  ctx.fillStyle = 'rgba(0,0,0,0.85)'; ctx.fillRect(0, 0, W, H);
+  for (let g of glitchLines) { ctx.fillStyle = '#cc0000'; ctx.fillRect(0, g.y, W, g.h); }
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#ff0000'; ctx.font = 'bold 16px monospace'; ctx.fillText('GAME OVER', W/2, 80);
+  ctx.fillStyle = '#cc8800'; ctx.font = '7px monospace'; ctx.fillText(catchMsg, W/2, 100);
+  ctx.fillStyle = '#888899'; ctx.font = '7px monospace';
+  ctx.fillText('YOU GOT TO DISTANCE: ' + Math.floor(winDist), W/2, 120);
+  ctx.fillText('(CLOSEST APPROACH: ' + bestDist + ')', W/2, 130);
+  ctx.fillStyle = Math.sin(frameCount * 0.1) > 0 ? '#aaaaff' : '#666699';
+  ctx.font = '7px monospace'; ctx.fillText('PRESS SPACE OR CLICK TO RETRY', W/2, 160);
+  ctx.textAlign = 'left';
+}
+
+function drawWin() {
+  ctx.fillStyle = 'rgba(0,0,5,0.9)'; ctx.fillRect(0, 0, W, H);
+  const fl = Math.sin(frameCount * 0.05) > 0;
+  ctx.textAlign = 'center';
+  ctx.fillStyle = fl ? '#ffff00' : '#aaaa00'; ctx.font = 'bold 12px monospace'; ctx.fillText('YOU REACHED HER.', W/2, 70);
+  ctx.fillStyle = '#ffffff'; ctx.font = '7px monospace';
+  ctx.fillText('she doesnt stop hammering.', W/2, 90);
+  ctx.fillText('the doll is you.', W/2, 102);
+  ctx.fillText('it was always you.', W/2, 114);
+  ctx.fillStyle = '#cc0000'; ctx.font = '8px monospace'; ctx.fillText('( you win??? )', W/2, 135);
+  ctx.fillStyle = Math.sin(frameCount * 0.1) > 0 ? '#aaaaff' : '#666699';
+  ctx.font = '7px monospace'; ctx.fillText('PRESS SPACE OR CLICK TO PLAY AGAIN', W/2, 165);
+  ctx.textAlign = 'left';
+}
+
+let lastTime = 0;
+function gameLoop(ts) {
+  const dt = Math.min((ts - lastTime) / 1000, 0.05);
+  lastTime = ts;
+  frameCount++;
+
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+  shakeX *= 0.8; shakeY *= 0.8;
+  ctx.save();
+  ctx.translate(shakeX, shakeY);
+
+  if (state === 'title') {
+    drawTitle();
+  } else if (state === 'playing') {
+    const moving = keys['ArrowUp'] || keys['ArrowDown'] || keys['ArrowLeft'] || keys['ArrowRight'] ||
+                   keys['w'] || keys['a'] || keys['s'] || keys['d'] ||
+                   keys['W'] || keys['A'] || keys['S'] || keys['D'];
+    playerMoving = !!moving;
+
+    if (playerMoving && figureState === 'hammering') {
+      playerZ = Math.min(100, playerZ + 15 * dt);
+    }
+
+    breathPhase += dt;
+
+    if (figureState === 'hammering') {
+      hammerFrame += dt * 60;
+      hammerTimer -= dt;
+      warningFlash = Math.max(0, warningFlash - dt * 2);
+      if (hammerTimer <= 0) {
+        const willLook = Math.random() < 0.6;
+        nextPauseDur = rand(0.8, 2.5);
+        lookTimer = nextPauseDur;
+        figureState = willLook ? 'looking' : 'paused';
+        flashTimer = 0.15;
+        shakeX = rand(-3, 3); shakeY = rand(-3, 3);
+      }
+    } else if (figureState === 'paused') {
+      warningFlash = Math.min(warningFlash + dt * 2, 0.8);
+      lookTimer -= dt;
+      if (lookTimer <= 0) {
+        figureState = 'hammering';
+        hammerTimer = rand(1.5, 3.5);
+        lookAngle = 0; warningFlash = 0;
+      }
+    } else if (figureState === 'looking') {
+      warningFlash = Math.min(warningFlash + dt * 3, 1.0);
+      lookTimer -= dt;
+      const progress = 1 - (lookTimer / nextPauseDur);
+      if (progress < 0.4) {
+        lookAngle = progress / 0.4;
+      } else if (progress < 0.6) {
+        lookAngle = 1.0;
+        if (playerMoving) {
+          winDist = playerZ;
+          if (Math.floor(playerZ) > bestDist) bestDist = Math.floor(playerZ);
+          state = 'gameover';
+          catchMsg = CATCH_MSGS[randi(0, CATCH_MSGS.length - 1)];
+          glitchLines = Array.from({length: 8}, () => ({y: randi(0, H), h: randi(1, 4)}));
+          shakeX = rand(-8, 8); shakeY = rand(-8, 8);
+        }
+      } else {
+        lookAngle = Math.max(0, 1 - (progress - 0.6) / 0.4);
+      }
+      if (lookTimer <= 0) {
+        figureState = 'hammering';
+        hammerTimer = rand(1.5, 3.5);
+        lookAngle = 0; warningFlash = 0;
+      }
+    }
+
+    if (playerZ >= 100) {
+      winDist = playerZ;
+      bestDist = Math.max(bestDist, 100);
+      state = 'win';
+    }
+
+    if (flashTimer > 0) flashTimer -= dt;
+
+    drawBG();
+    drawFigure(playerZ);
+    drawPlayer(playerZ);
+    drawHUD(playerZ);
+
+    if (flashTimer > 0) {
+      ctx.globalAlpha = flashTimer * 3;
+      ctx.fillStyle = flashColor;
+      ctx.fillRect(0, 0, W, H);
+      ctx.globalAlpha = 1;
+    }
+  } else if (state === 'gameover') {
+    drawBG(); drawFigure(winDist); drawGameOver();
+  } else if (state === 'win') {
+    drawBG(); drawFigure(100); drawWin();
+  }
+
+  ctx.restore();
+  requestAnimationFrame(gameLoop);
+}
+
+document.addEventListener('keydown', e => {
+  keys[e.key] = true;
+  if ((e.key === ' ' || e.key === 'Enter') && state !== 'playing') startGame();
+  if (e.key === ' ') e.preventDefault();
+});
+document.addEventListener('keyup', e => { keys[e.key] = false; });
+
+canvas.addEventListener('click', () => { if (state !== 'playing') startGame(); });
+canvas.addEventListener('mousedown', () => { keys['ArrowUp'] = true; });
+canvas.addEventListener('mouseup',   () => { keys['ArrowUp'] = false; });
+canvas.addEventListener('touchstart', e => { e.preventDefault(); keys['ArrowUp'] = true; if (state !== 'playing') startGame(); }, {passive: false});
+canvas.addEventListener('touchend',   e => { e.preventDefault(); keys['ArrowUp'] = false; }, {passive: false});
+
+requestAnimationFrame(ts => { lastTime = ts; requestAnimationFrame(gameLoop); });
+</script>
+</body>
+</html> 
