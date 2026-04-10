@@ -520,7 +520,78 @@ canvas.mini-screen {
   cursor: pointer;
   padding: 8px;
 }
+/* ─── ARCADE CURTAIN ─── */
+.arcade-curtain {
+  position: fixed;
+  inset: 0;
+  background: rgba(20,20,24,0.72);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9500;
+  transition: opacity 0.35s ease, visibility 0.35s ease;
+}
 
+.arcade-curtain.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.arcade-curtain-box {
+  width: min(88vw, 320px);
+  padding: 22px 18px 18px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(8,8,12,0.92);
+  box-shadow:
+    0 0 20px rgba(255,0,110,0.18),
+    0 0 40px rgba(0,255,245,0.12);
+  border-radius: 10px;
+  text-align: center;
+}
+
+.arcade-curtain-title {
+  font-family: 'VT323', monospace;
+  font-size: 24px;
+  letter-spacing: 2px;
+  color: #fff;
+  text-shadow: 0 0 8px var(--neon-pink), 0 0 18px var(--neon-pink);
+  margin-bottom: 16px;
+}
+
+.arcade-enter-btn {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  width: 108px;
+  height: 108px;
+  border-radius: 50%;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 14px;
+  color: #fff8d6;
+  background: radial-gradient(circle at 30% 30%, #ffe79a 0%, #d9a92e 45%, #9a6a00 100%);
+  box-shadow:
+    inset 0 2px 6px rgba(255,255,255,0.35),
+    inset 0 -4px 8px rgba(0,0,0,0.35),
+    0 0 10px rgba(255,230,0,0.35),
+    0 0 24px rgba(255,170,0,0.25);
+  margin: 0 auto 14px;
+  transition: transform 0.12s ease, filter 0.12s ease;
+}
+
+.arcade-enter-btn:active {
+  transform: scale(0.94);
+  filter: brightness(1.08);
+}
+
+.arcade-curtain-sub {
+  font-family: 'VT323', monospace;
+  font-size: 16px;
+  letter-spacing: 2px;
+  color: var(--neon-cyan);
+  opacity: 0.9;
+}
 /* ─── FOOTER ─── */
 footer {
   text-align: center;
@@ -575,7 +646,13 @@ footer {
 </header>
 
 <div class="shelf-container" id="shelfContainer"></div>
-
+<div class="arcade-curtain" id="arcadeCurtain">
+  <div class="arcade-curtain-box">
+    <div class="arcade-curtain-title">WELCOME TO ARCADE</div>
+    <button class="arcade-enter-btn" id="arcadeEnterBtn">100円投入</button>
+    <div class="arcade-curtain-sub">INSERT COIN TO ENTER</div>
+  </div>
+</div>
 <footer>
   <div class="footer-text">▓▓▒▒░░ MORE GAMES COMING SOON ░░▒▒▓▓</div>
 </footer>
@@ -1117,6 +1194,14 @@ function unlockArcadeBgm() {
   arcadeBgm.volume = 0.4;
   arcadeBgm.play().catch(()=>{});
 }
+  function enterArcade() {
+  unlockArcadeBgm();
+
+  const curtain = document.getElementById('arcadeCurtain');
+  if (curtain) {
+    curtain.classList.add('hidden');
+  }
+}
   document.addEventListener('visibilitychange', () => {
   if (!arcadeBgm) return;
 
@@ -1125,8 +1210,7 @@ function unlockArcadeBgm() {
     arcadeBgm.currentTime = 0;
   }
 });
-  document.body.addEventListener('touchstart', unlockArcadeBgm, { once:true });
-document.body.addEventListener('click', unlockArcadeBgm, { once:true });
+  document.getElementById('arcadeEnterBtn').addEventListener('click', enterArcade);
 renderShelf();
 setTimeout(()=>{
   initCanvases();
