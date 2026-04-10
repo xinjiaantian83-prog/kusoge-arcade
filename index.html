@@ -562,7 +562,7 @@ footer {
 </style>
 </head>
 <body>
-
+<audio id="arcadeBgm" src="arcade_bgm.mp3" loop></audio>
 <header>
   <div class="header-logo">◆ PIXEL VAULT COLLECTION ◆</div>
   <div class="header-title">RETRO GAME SHELF</div>
@@ -1108,7 +1108,17 @@ function closeLaunch() {
 }
 
 // ─── INIT ─────────────────────────────────────────────────────
+let arcadeBgm = null;
 
+function unlockArcadeBgm() {
+  if (!arcadeBgm) {
+    arcadeBgm = document.getElementById('arcadeBgm');
+  }
+  arcadeBgm.volume = 0.4;
+  arcadeBgm.play().catch(()=>{});
+}
+  document.body.addEventListener('touchstart', unlockArcadeBgm, { once:true });
+document.body.addEventListener('click', unlockArcadeBgm, { once:true });
 renderShelf();
 setTimeout(()=>{
   initCanvases();
