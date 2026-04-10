@@ -561,6 +561,7 @@ canvas.mini-screen {
 }
 
 .arcade-enter-btn {
+  position: relative;
   appearance: none;
   border: none;
   cursor: pointer;
@@ -570,16 +571,26 @@ canvas.mini-screen {
   font-family: 'Press Start 2P', monospace;
   font-size: 12px;
   color: #fff8d6;
-  background: radial-gradient(circle at 30% 30%, #ffe79a 0%, #d9a92e 45%, #9a6a00 100%);
-  box-shadow:
-    inset 0 2px 6px rgba(255,255,255,0.35),
-    inset 0 -4px 8px rgba(0,0,0,0.35),
-    0 0 10px rgba(255,230,0,0.35),
-    0 0 24px rgba(255,170,0,0.25);
-  margin: 0 auto 14px;
-  transition: transform 0.12s ease, filter 0.12s ease;
+ /* 金コインの質感 */
+background:
+  radial-gradient(circle at 30% 30%, #fff6c0 0%, #f0c24b 25%, #c58b12 55%, #8a5c00 100%);
 }
+.arcade-enter-btn::before {
+  content: '฿';   /* ← 縦線付きBっぽいやつ */
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
+  font-size: 42px;
+  font-family: 'VT323', monospace;
+  color: rgba(255,255,255,0.85);
+  text-shadow:
+    0 0 6px rgba(255,255,255,0.6),
+    0 0 14px rgba(255,200,60,0.6);
+  pointer-events: none;
+}
 .arcade-enter-btn:active {
   transform: scale(0.94);
   filter: brightness(1.08);
