@@ -111,6 +111,8 @@ box-shadow:
   justify-content:flex-start;
   padding:18px 14px 24px;
   text-align:center;
+  position: relative;
+z-index: 5;
   background:linear-gradient(180deg,#11131d 0%, #181c2e 100%);
   gap:12px;
 }
@@ -135,6 +137,7 @@ box-shadow:
   display:flex;
   justify-content:center;
   align-items:center;
+    pointer-events: none;
   }
 
 
@@ -143,6 +146,7 @@ box-shadow:
   display:flex;
   justify-content:center;
   align-items:center;
+  pointer-events: none;
 }
 
 
@@ -152,6 +156,10 @@ box-shadow:
   flex-direction:column;
   align-items:center;
   justify-content:flex-start;
+  position: relative;
+z-index: 30;
+margin-top: auto;
+padding-bottom: 90px;
 }
   @keyframes titleGlitch {
   0% { transform: translate(0,0); }
@@ -217,6 +225,7 @@ box-shadow:
     0 4px 0 #0a0f5a,
     0 10px 16px rgba(0,0,0,0.18),
     inset 0 0 18px rgba(0,255,255,0.08);
+  pointer-events: none;
 }
 
 .demoPlayer{
@@ -304,6 +313,9 @@ box-shadow:
   width:86%;
   margin:0 auto;
   display:block;
+  position: relative;
+z-index: 31;
+pointer-events: auto;
 }
 
 #musicBtn{
