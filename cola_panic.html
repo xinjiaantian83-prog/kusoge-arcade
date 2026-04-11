@@ -159,6 +159,23 @@ body{
   margin-bottom:12px;
   text-shadow:0 0 8px rgba(21,240,255,0.45);
 }
+  #elvisTitle{
+  width:190px;
+  max-width:70%;
+  height:auto;
+  margin-bottom:12px;
+  image-rendering:auto;
+  filter:
+    drop-shadow(0 0 8px rgba(255,255,255,0.18))
+    drop-shadow(0 0 18px rgba(255,60,60,0.25));
+  animation:elvisFloat 1.8s ease-in-out infinite;
+}
+
+@keyframes elvisFloat{
+  0%{transform:translateY(0);}
+  50%{transform:translateY(-6px);}
+  100%{transform:translateY(0);}
+}
 .info{
   font-size:11px;
   line-height:1.9;
@@ -490,7 +507,7 @@ body{
 <div id="startFlash"></div>
   <div id="titleScreen" class="screen">
     <div class="titleMini">SELECT YOUR DEVICE</div>
-<canvas id="titleChar" width="140" height="140" style="margin-bottom:10px; pointer-events:none;"></canvas>
+<img id="elvisTitle" src="elvis.png" alt="ELVIS">
 <div class="title">COLA PANIC</div>
   <div class="subtitle">PIXEL VAULT COLLECTION</div>
   <div class="info">GET THE COLA
@@ -2156,92 +2173,6 @@ document.getElementById('musicBtn').onclick = () => {
     bgm.play().catch(() => {});
   });
 };
- const titleChar = document.getElementById('titleChar');
-titleChar.addEventListener('touchstart', () => {
-  clones.push({
-    x: 0,
-    y: 0,
-    vx: Math.random()*6 - 3,
-    vy: Math.random()*6 - 3
-  });
-});
-const titleCtx = titleChar.getContext('2d');
-
-function drawTitleChar() {
-  titleCtx.clearRect(0, 0, 140, 140);
-
-  const offsetX = Math.sin(Date.now() * 0.025) * 3;
-  const offsetY = Math.sin(Date.now() * 0.025) * 2;
-
-  titleCtx.save();
-  titleCtx.translate(50 + offsetX, 28 + offsetY);
-
-  const s = 5;
-  const colors = [
-    '',
-    '#f5c48a',
-    '#3a1a00',
-    '#e02020',
-    '#ffffff',
-    '#202020',
-    '#ffffff',
-    '#ff4040'
-  ];
-
-  const px = [
-    [0,0,2,2,2,0,0,0],
-    [0,0,1,1,1,0,0,0],
-    [0,0,1,6,1,0,0,0],
-    [0,2,1,1,1,2,0,0],
-    [0,0,3,3,3,0,0,0],
-    [0,3,3,3,3,3,0,0],
-    [0,0,3,3,3,0,0,0],
-    [0,0,4,4,4,0,0,0],
-    [0,0,4,4,4,0,0,0],
-    [0,5,0,0,0,5,0,0],
-    [0,5,0,0,0,5,0,0],
-    [0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0],
-  ];
-
-  for(let r=0;r<16;r++){
-    for(let c=0;c<8;c++){
-      const v = px[r][c];
-      if(!v) continue;
-      titleCtx.fillStyle = colors[v];
-      titleCtx.fillRect(c*s, r*s, s, s);
-    }
-  }
-
-  titleCtx.restore();
-
-  clones.forEach(c => {
-    c.x += c.vx;
-    c.y += c.vy;
-    c.vy += 0.2;
-
-    titleCtx.save();
-    titleCtx.translate(50 + offsetX + c.x, 28 + offsetY + c.y);
-
-    for(let r=0;r<16;r++){
-      for(let col=0;col<8;col++){
-        const v = px[r][col];
-        if(!v) continue;
-        titleCtx.fillStyle = colors[v];
-        titleCtx.fillRect(col*s, r*s, s, s);
-      }
-    }
-
-    titleCtx.restore();
-  });
-
-  clones = clones.filter(c => c.y < 160);
-}
-
-setInterval(drawTitleChar, 16);
 
 
 </script>
