@@ -206,7 +206,43 @@ box-shadow:
   transform:none;
   animation:none;
 }
+#demoScreen{
+  width:100%;
+  max-width:320px;
+  height:170px;
+  margin:18px auto 14px;
+  position:relative;
+  overflow:hidden;
 
+  background:linear-gradient(180deg,#101426 0%, #1a2040 100%);
+  border:3px solid #ffffff;
+  box-shadow:
+    0 4px 0 #0a0f5a,
+    0 10px 16px rgba(0,0,0,0.18),
+    inset 0 0 18px rgba(0,255,255,0.08);
+}
+
+.demoPlayer{
+  position:absolute;
+  left:24px;
+  bottom:26px;
+  width:34px;
+  height:46px;
+  background:#ff4040;
+  border:3px solid #ffffff;
+  box-shadow:0 0 0 2px #202020 inset;
+}
+
+.demoCola{
+  position:absolute;
+  right:28px;
+  bottom:22px;
+  width:34px;
+  height:58px;
+  background:#d81818;
+  border:3px solid #ffffff;
+  box-shadow:0 0 0 2px #7a0000 inset;
+}
 @keyframes elvisFloat{
   0%{transform:translateY(0);}
   50%{transform:translateY(-6px);}
@@ -557,16 +593,16 @@ box-shadow:
 <div id="startFlash"></div>
  <div id="titleScreen" class="screen">
   <div class="titleHero">
-    <img id="elvisTitle" src="title_elvis_famicom.png" alt="ELVIS">
-  </div>
+   <img id="elvisTitle" src="title_elvis_famicom.png" alt="ELVIS">
+
 <div id="demoScreen">
   <div class="demoPlayer"></div>
   <div class="demoCola"></div>
 </div>
-  <div class="titleBrand">
-    <img class="titleLogo" src="cola_panic_logo.png" alt="COLA PANIC">
-  </div>
 
+<div class="titleBrand">
+  <img class="titleLogo" src="cola_panic_logo.png" alt="COLA PANIC">
+</div>
   <div class="titleButtons">
     <button class="btn btn-main" id="startBtn">PUSH START</button>
     <button class="btn btn-sub" id="musicBtn">MUSIC START</button>
