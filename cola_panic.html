@@ -46,6 +46,55 @@ body{
   );
   z-index:99;
 }
+  #cabinetGlow{
+  position:absolute;
+  inset:-8px;
+  border-radius:22px;
+  pointer-events:none;
+  z-index:1;
+  box-shadow:
+    0 0 18px rgba(0,255,255,0.22),
+    0 0 38px rgba(255,0,140,0.14),
+    inset 0 0 16px rgba(0,255,255,0.08);
+}
+
+#cabinetFrame{
+  position:absolute;
+  inset:8px;
+  border-radius:18px;
+  border:2px solid rgba(110,255,255,0.28);
+  box-shadow:
+    inset 0 0 0 2px rgba(255,255,255,0.04),
+    inset 0 0 14px rgba(0,255,255,0.08);
+  pointer-events:none;
+  z-index:2;
+}
+
+.cabinetBolt{
+  position:absolute;
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background:radial-gradient(circle at 35% 35%, #d8d8d8 0%, #777 45%, #222 100%);
+  box-shadow:0 0 6px rgba(255,255,255,0.15);
+}
+
+.bolt1{top:10px;left:10px;}
+.bolt2{top:10px;right:10px;}
+.bolt3{bottom:10px;left:10px;}
+.bolt4{bottom:10px;right:10px;}
+
+#cabinetBrand{
+  position:absolute;
+  left:50%;
+  bottom:10px;
+  transform:translateX(-50%);
+  font-size:9px;
+  letter-spacing:2px;
+  color:#7efcff;
+  text-shadow:0 0 8px rgba(0,255,255,0.4);
+  white-space:nowrap;
+}
 .screen{
   position:absolute;
   inset:0;
@@ -102,6 +151,13 @@ body{
   margin-bottom:20px;
   letter-spacing:3px;
   text-shadow:0 0 8px rgba(122,124,255,0.45);
+}
+  .titleMini{
+  font-size:11px;
+  color:#15f0ff;
+  letter-spacing:4px;
+  margin-bottom:12px;
+  text-shadow:0 0 8px rgba(21,240,255,0.45);
 }
 .info{
   font-size:11px;
@@ -163,17 +219,21 @@ body{
 }
 #statusBar{
   position:absolute;
-  top:0;left:0;right:0;
-  height:42px;
-  background:#0d0d22;
-  border-bottom:2px solid #3a3a5c;
+  top:10px;left:12px;right:12px;
+  height:44px;
+  background:linear-gradient(180deg, rgba(10,18,28,0.96) 0%, rgba(5,10,18,0.96) 100%);
+  border:2px solid rgba(0,255,255,0.22);
+  border-radius:12px;
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding:0 12px;
+  padding:0 14px;
   z-index:10;
   font-size:10px;
-  color:#7878c0;
+  color:#7efcff;
+  box-shadow:
+    0 0 10px rgba(0,255,255,0.12),
+    inset 0 0 10px rgba(0,255,255,0.06);
 }
 #statusMsg{
   flex:1;
@@ -187,7 +247,7 @@ body{
 }
 #scene{
   position:absolute;
-  top:42px;
+  top:62px;
   bottom:110px;
   left:0;right:0;
 }
@@ -205,30 +265,45 @@ body{
   z-index:10;
 }
 .ctrl{
-  width:88px;
-  height:64px;
-  border:3px solid #4a4a80;
-  background:#1a1a40;
+  width:82px;
+  height:82px;
+  border-radius:50%;
+  border:3px solid rgba(255,255,255,0.08);
   color:#fff;
   font-size:28px;
   font-weight:bold;
-  box-shadow:4px 4px 0 #000;
+  box-shadow:
+    0 8px 0 rgba(0,0,0,0.55),
+    0 0 18px rgba(0,0,0,0.28),
+    inset 0 3px 0 rgba(255,255,255,0.2),
+    inset 0 -6px 0 rgba(0,0,0,0.25);
   display:flex;
   align-items:center;
   justify-content:center;
   user-select:none;
 }
 .ctrl:active,.ctrl.pressed{
-  transform:translate(3px,3px);
-  box-shadow:1px 1px 0 #000;
-  background:#2a2a60;
+  transform:translateY(6px);
+  box-shadow:
+    0 2px 0 rgba(0,0,0,0.55),
+    inset 0 2px 0 rgba(255,255,255,0.12),
+    inset 0 -3px 0 rgba(0,0,0,0.18);
+}
+  #leftBtn{
+  background:radial-gradient(circle at 35% 30%, #58f6ff 0%, #16b8ff 45%, #0b3c88 100%);
+}
+
+#rightBtn{
+  background:radial-gradient(circle at 35% 30%, #ff7a7a 0%, #ff3b59 45%, #7a0018 100%);
 }
 #ctrlCenter{
   flex:1;
   text-align:center;
   font-size:9px;
-  color:#4a4a70;
+  color:#6ceeff;
   line-height:1.6;
+  letter-spacing:2px;
+  text-shadow:0 0 8px rgba(0,255,255,0.22);
 }
 #overlay{
   position:absolute;
@@ -402,35 +477,27 @@ body{
 </style>
 </head>
 <body>
-  <button
-  onclick="location.href='index.html'"
-  style="
-    position:fixed;
-    top:10px;
-    left:10px;
-    z-index:9999;
-    padding:8px 12px;
-    font-size:12px;
-    font-family:monospace;
-    background:#000;
-    color:#0ff;
-    border:1px solid #0ff;
-    box-shadow:0 0 8px #0ff;
-  ">
-← ARCADE
-</button>
+  
 <div id="game">
+  <div id="cabinetGlow"></div>
+<div id="cabinetFrame">
+  <div class="cabinetBolt bolt1"></div>
+  <div class="cabinetBolt bolt2"></div>
+  <div class="cabinetBolt bolt3"></div>
+  <div class="cabinetBolt bolt4"></div>
+  <div id="cabinetBrand">COLA PANIC / PIXEL VAULT</div>
+</div>
 <div id="startFlash"></div>
   <div id="titleScreen" class="screen">
+    <div class="titleMini">SELECT YOUR DEVICE</div>
 <canvas id="titleChar" width="140" height="140" style="margin-bottom:10px; pointer-events:none;"></canvas>
- <div class="title">I LOVE COLA</div>
-   <div class="subtitle">ARCADE EDITION</div>
-  <div class="info">目標
+<div class="title">COLA PANIC</div>
+  <div class="subtitle">PIXEL VAULT COLLECTION</div>
+  <div class="info">GET THE COLA
 
-・コーラをゲットしよう
-・生き延びろ
-
-※ 保証はありません</div>
+・床を信じるな
+・落ちても泣くな
+・助かる保証はない</div>
     <button class="btn btn-main" id="startBtn">PUSH START</button>
     <button class="btn btn-sub" id="musicBtn">MUSIC START</button>
   </div>
@@ -445,7 +512,7 @@ body{
 
     <div id="controls">
       <div class="ctrl" id="leftBtn">◀</div>
-      <div id="ctrlCenter">LEFT / RIGHT<br>で板まで移動</div>
+     <div id="ctrlCenter">ARCADE CONTROL<br>MOVE</div>
       <div class="ctrl" id="rightBtn">▶</div>
     </div>
 
