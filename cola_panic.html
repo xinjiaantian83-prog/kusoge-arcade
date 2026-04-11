@@ -105,11 +105,11 @@ box-shadow:
 }
 /* title */
 #titleScreen{
-  display:grid;
-  grid-template-rows: 58% 17% 25%;
-  width:100%;
-  height:100%;
-  padding:14px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  padding:14px 14px 24px;
   background:#f7f1e3;
   text-align:center;
 }
@@ -129,6 +129,32 @@ box-shadow:
   text-shadow:
     2px 2px 0 #8b0000;
 }
+  .titleHero{
+  width:100%;
+  height:54%;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+}
+
+.titleBrand{
+  width:100%;
+  height:14%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-top:6px;
+}
+
+.titleButtons{
+  width:100%;
+  height:22%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  margin-top:10px;
+}
   @keyframes titleGlitch {
   0% { transform: translate(0,0); }
   20% { transform: translate(-1px,1px); }
@@ -142,11 +168,11 @@ box-shadow:
   animation: titleGlitch 0.25s infinite;
 }
 .titleLogo{
-  width:220px;
+  width:240px;
   max-width:78%;
   height:auto;
-  margin:0 auto 12px;
   display:block;
+  margin:0 auto;
   filter:drop-shadow(0 4px 8px rgba(0,0,0,0.15));
 }
 .subtitle{
@@ -163,13 +189,12 @@ box-shadow:
   margin-bottom:12px;
   text-shadow:none;
 }
- #elvisTitle{
-  width:260px;
-  max-width:92%;
+#elvisTitle{
+  width:280px;
+  max-width:88%;
   height:auto;
-  margin:0 auto 0;
   display:block;
-  object-fit:contain;
+  margin:0 auto;
   border:4px solid #ffffff;
   background:#fffaf0;
   padding:6px;
@@ -177,7 +202,7 @@ box-shadow:
     0 6px 0 #8b0000,
     0 12px 18px rgba(0,0,0,0.18);
   transform:rotate(-2deg);
-  animation:elvisFloat 1.8s ease-in-out infinite;
+  animation:none;
 }
 
 @keyframes elvisFloat{
@@ -238,17 +263,16 @@ box-shadow:
     inset 0 2px 0 rgba(255,255,255,0.22);
 }
   
-   #startBtn,
+  #startBtn,
 #musicBtn{
-  min-width:240px;
-  width:88%;
-  margin:6px auto;
+  min-width:250px;
+  width:86%;
+  margin:0 auto;
   display:block;
 }
 
 #musicBtn{
-  margin-top:8px;
-  margin-bottom:10px;
+  margin-top:10px;
 }
 /* play */
 #playScreen{
@@ -529,37 +553,20 @@ box-shadow:
   <div id="cabinetBrand">COLA PANIC / PIXEL VAULT</div>
 </div>
 <div id="startFlash"></div>
-  <div id="titleScreen" class="screen">
-    
-<img id="elvisTitle" src="title_elvis_famicom.png" alt="ELVIS">
-<img class="titleLogo" src="cola_panic_logo.png" alt="COLA PANIC">
- 
-  
+ <div id="titleScreen" class="screen">
+  <div class="titleHero">
+    <img id="elvisTitle" src="title_elvis_famicom.png" alt="ELVIS">
+  </div>
+
+  <div class="titleBrand">
+    <img class="titleLogo" src="cola_panic_logo.png" alt="COLA PANIC">
+  </div>
+
+  <div class="titleButtons">
     <button class="btn btn-main" id="startBtn">PUSH START</button>
     <button class="btn btn-sub" id="musicBtn">MUSIC START</button>
   </div>
-
-  <div id="playScreen" class="screen hidden">
-    <div id="statusBar">
-      <span id="statusLeft">STAGE 1</span>
-     <span id="statusMsg"></span>
-      <span id="statusRight">HP: ♥</span>
-    </div>
-    <canvas id="scene" width="360" height="480"></canvas>
-
-    <div id="controls">
-      <div class="ctrl" id="leftBtn">◀</div>
-     <div id="ctrlCenter">ARCADE CONTROL<br>MOVE</div>
-      <div class="ctrl" id="rightBtn">▶</div>
-    </div>
-
-    <div id="overlay" class="hidden">
-      <div class="ovTitle" id="ovTitle">！！</div>
-      <div class="ovMsg" id="ovMsg"></div>
-      <div class="row" id="ovButtons"></div>
-    </div>
-  </div>
-
+</div>
   <div id="resultScreen" class="screen hidden">
     <div id="resultTitle" class="resultTitle fail">GAME OVER</div>
     <div id="resultMsg" class="resultMsg"></div>
@@ -2200,7 +2207,7 @@ document.getElementById('musicBtn').onclick = () => {
   style="
    position:absolute;
 right:14px;
-bottom:14px;
+bottom:10px;
 left:auto;
 transform:none;
 padding:8px 14px;
